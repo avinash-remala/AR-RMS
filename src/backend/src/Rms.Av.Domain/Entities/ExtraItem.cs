@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Menu;
+namespace Rms.Av.Domain.Entities;
 
 public class ExtraItem : AuditableEntity
 {

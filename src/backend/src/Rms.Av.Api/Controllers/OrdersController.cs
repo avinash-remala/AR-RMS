@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Rms.Av.Domain.Modules.Orders;
+using Rms.Av.Domain.Entities;
 using Rms.Av.Infrastructure.Persistence;
 
 namespace Rms.Av.Api.Controllers;
@@ -23,8 +23,8 @@ public class OrdersController : ControllerBase
     {
         var query = _context.Orders.AsQueryable();
 
-        // TODO: Filter by current user if me=true
-        // if (me) query = query.Where(o => o.UserId == currentUserId);
+        // TODO: Filter by current customer if me=true
+        // if (me) query = query.Where(o => o.CustomerId == currentCustomerId);
 
         if (date.HasValue)
         {

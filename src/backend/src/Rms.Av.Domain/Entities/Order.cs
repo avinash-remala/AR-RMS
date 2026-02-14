@@ -1,13 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Orders;
+namespace Rms.Av.Domain.Entities;
 
 public class Order : AuditableEntity
 {
     public string OrderNumber { get; set; } = string.Empty;
-    public Guid? UserId { get; set; }
-    public string FullName { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
+    [Required]
+    public Guid CustomerId { get; set; }
     public string BuildingNumber { get; set; } = string.Empty;
     public string? Comments { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

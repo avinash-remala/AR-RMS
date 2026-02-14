@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rms.Av.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using Rms.Av.Infrastructure.Persistence;
 namespace Rms.Av.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(RmsAvDbContext))]
-    partial class RmsAvDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260214201253_UpdateOrdersAndAddAllEntities")]
+    partial class UpdateOrdersAndAddAllEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
@@ -106,9 +109,6 @@ namespace Rms.Av.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Phone")
-                        .IsUnique();
 
                     b.ToTable("Customers");
                 });
@@ -339,13 +339,21 @@ namespace Rms.Av.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CustomerId")
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

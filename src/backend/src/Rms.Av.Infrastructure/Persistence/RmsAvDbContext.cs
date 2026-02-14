@@ -1,10 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Rms.Av.Domain.Modules.Auth;
-using Rms.Av.Domain.Modules.Companies;
-using Rms.Av.Domain.Modules.Employees;
-using Rms.Av.Domain.Modules.Menu;
-using Rms.Av.Domain.Modules.Orders;
-using Rms.Av.Domain.Modules.Payments;
+using Rms.Av.Domain.Entities;
 
 namespace Rms.Av.Infrastructure.Persistence;
 
@@ -15,7 +10,7 @@ public class RmsAvDbContext : DbContext
     }
 
     // Auth
-    public DbSet<User> Users => Set<User>();
+    public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     
     // Core Entities
@@ -52,9 +47,10 @@ public class RmsAvDbContext : DbContext
             .Property(o => o.Status)
             .HasConversion<string>();
             
-        modelBuilder.Entity<User>()
-            .Property(u => u.Role)
-            .HasConversion<string>();
+        // Configure unique index on Customer phone number
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.Phone)
+            .IsUnique();
             
         modelBuilder.Entity<VendorInvoice>()
             .Property(v => v.Status)

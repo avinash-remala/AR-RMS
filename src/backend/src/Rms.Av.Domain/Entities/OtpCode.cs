@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Auth;
+namespace Rms.Av.Domain.Entities;
 
 public class OtpCode : BaseEntity
 {

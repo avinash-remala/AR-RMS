@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Rms.Av.Domain.Modules.Companies;
+using Rms.Av.Domain.Entities;
 using Rms.Av.Infrastructure.Persistence;
 
 namespace Rms.Av.Api.Controllers;

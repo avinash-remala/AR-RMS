@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Employees;
+namespace Rms.Av.Domain.Entities;
 
 public class Employee : AuditableEntity
 {
@@ -15,9 +15,10 @@ public class Employee : AuditableEntity
 
 public enum EmployeeRole
 {
-    Admin = 1,
+    Employee = 1,
     Manager = 2,
-    Kitchen = 3,
-    Packing = 4,
-    Delivery = 5
+    Admin = 3,
+    Kitchen = 4,
+    Packing = 5,
+    Delivery = 6
 }

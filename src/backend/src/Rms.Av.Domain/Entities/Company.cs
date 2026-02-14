@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Companies;
+namespace Rms.Av.Domain.Entities;
 
 public class Company : AuditableEntity
 {

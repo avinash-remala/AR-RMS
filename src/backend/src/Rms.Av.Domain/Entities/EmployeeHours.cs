@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Employees;
+namespace Rms.Av.Domain.Entities;
 
 public class EmployeeHours : AuditableEntity
 {

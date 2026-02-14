@@ -1,6 +1,6 @@
 using Rms.Av.Domain.Common.Base;
 
-namespace Rms.Av.Domain.Modules.Payments;
+namespace Rms.Av.Domain.Entities;
 
 public class VendorPayment : AuditableEntity
 {
