@@ -6,7 +6,7 @@ using Rms.Av.Infrastructure.Persistence;
 namespace Rms.Av.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/orders")]
 public class OrdersController : ControllerBase
 {
     private readonly RmsAvDbContext _context;
@@ -19,14 +19,17 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] DateTime? deliveryDate)
+    public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] bool me = false, [FromQuery] DateTime? date = null)
     {
         var query = _context.Orders.AsQueryable();
 
-        if (deliveryDate.HasValue)
+        // TODO: Filter by current user if me=true
+        // if (me) query = query.Where(o => o.UserId == currentUserId);
+
+        if (date.HasValue)
         {
-            var date = deliveryDate.Value.Date;
-            query = query.Where(o => o.DeliveryDate.Date == date);
+            var dateOnly = date.Value.Date;
+            query = query.Where(o => o.OrderDate.Date == dateOnly);
         }
 
         return await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
@@ -35,7 +38,10 @@ public class OrdersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Order>> GetOrder(Guid id)
     {
-        var order = await _context.Orders.FindAsync(id);
+        var order = await _context.Orders
+            .Include(o => o.Items)
+            .Include(o => o.Extras)
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
         {
@@ -55,35 +61,8 @@ public class OrdersController : ControllerBase
         return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateOrder(Guid id, Order order)
-    {
-        if (id != order.Id)
-        {
-            return BadRequest();
-        }
-
-        order.UpdatedAt = DateTime.UtcNow;
-        _context.Entry(order).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await _context.Orders.AnyAsync(e => e.Id == id))
-            {
-                return NotFound();
-            }
-            throw;
-        }
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteOrder(Guid id)
+    [HttpPatch("{id}/cancel")]
+    public async Task<IActionResult> CancelOrder(Guid id)
     {
         var order = await _context.Orders.FindAsync(id);
         if (order == null)
@@ -91,9 +70,10 @@ public class OrdersController : ControllerBase
             return NotFound();
         }
 
-        _context.Orders.Remove(order);
+        order.Status = OrderStatus.Cancelled;
+        order.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new { message = "Order cancelled successfully" });
     }
 }

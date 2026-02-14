@@ -5,15 +5,32 @@ namespace Rms.Av.Domain.Modules.Orders;
 public class Order : AuditableEntity
 {
     public string OrderNumber { get; set; } = string.Empty;
-    public Guid CompanyId { get; set; }
-    public DateTime DeliveryDate { get; set; }
-    public string DeliveryAddress { get; set; } = string.Empty;
-    public int VegCount { get; set; }
-    public int NonVegCount { get; set; }
-    public string RiceType { get; set; } = "Regular";
+    public Guid? UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string BuildingNumber { get; set; } = string.Empty;
+    public string? Comments { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public decimal TotalAmount { get; set; }
-    public string? SpecialInstructions { get; set; }
+    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+    public List<OrderItem> Items { get; set; } = new();
+    public List<OrderExtra> Extras { get; set; } = new();
+}
+
+public class OrderItem : BaseEntity
+{
+    public Guid OrderId { get; set; }
+    public Guid MenuItemId { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
+}
+
+public class OrderExtra : BaseEntity
+{
+    public Guid OrderId { get; set; }
+    public Guid ExtraItemId { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
 }
 
 public enum OrderStatus
