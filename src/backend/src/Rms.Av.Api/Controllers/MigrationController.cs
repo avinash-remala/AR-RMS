@@ -26,24 +26,23 @@ public class MigrationController : ControllerBase
         _environment = environment;
     }
 
-    [HttpPost("import-csv")]
-    public async Task<IActionResult> ImportCsvData([FromForm] IFormFile file, [FromQuery] string entityType)
+    [HttpPost("import-att-orders")]
+    public async Task<IActionResult> ImportAttOrders()
     {
-        if (file == null || file.Length == 0)
-        {
-            return BadRequest(new { message = "No file uploaded" });
-        }
-
-        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-        {
-            return BadRequest(new { message = "File must be a CSV" });
-        }
-
         try
         {
-            var importedCount = 0;
+            // Clear existing orders/items/extras to avoid duplicates
+            await _context.Set<OrderExtra>().ExecuteDeleteAsync();
+            await _context.Set<OrderItem>().ExecuteDeleteAsync();
+            await _context.Orders.ExecuteDeleteAsync();
 
-            using var stream = file.OpenReadStream();
+            var filePath = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", "Data", "att orders.csv"));
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound(new { message = $"CSV file not found at {filePath}" });
+            }
+
+            using var stream = System.IO.File.OpenRead(filePath);
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -51,168 +50,20 @@ public class MigrationController : ControllerBase
                 MissingFieldFound = null
             });
 
-            switch (entityType?.ToLower())
-            {
-                case "menuitem":
-                case "menuitems":
-                    importedCount = await ImportMenuItems(csv);
-                    break;
-
-                case "extraitem":
-                case "extraitems":
-                    importedCount = await ImportExtraItems(csv);
-                    break;
-
-                case "company":
-                case "companies":
-                    importedCount = await ImportCompanies(csv);
-                    break;
-
-                case "employee":
-                case "employees":
-                    importedCount = await ImportEmployees(csv);
-                    break;
-
-                case "vendor":
-                case "vendors":
-                    importedCount = await ImportVendors(csv);
-                    break;
-
-                case "order":
-                case "orders":
-                case "attorders":
-                    importedCount = await ImportHistoricalOrders(csv);
-                    break;
-
-                default:
-                    return BadRequest(new { message = $"Unknown entity type: {entityType}. Supported types: menuitem, extraitem, company, employee, vendor, orders" });
-            }
+            var importedCount = await ImportHistoricalOrders(csv);
 
             return Ok(new 
             { 
-                message = "Import completed successfully", 
-                entityType,
+                message = "ATT orders import completed successfully", 
+                file = filePath,
                 recordsImported = importedCount 
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error importing CSV data for entity type: {EntityType}", entityType);
-            return StatusCode(500, new { message = "Error importing data", error = ex.Message });
+            _logger.LogError(ex, "Error importing ATT orders CSV");
+            return StatusCode(500, new { message = "Error importing ATT orders", error = ex.Message });
         }
-    }
-
-    private async Task<int> ImportMenuItems(CsvReader csv)
-    {
-        var records = csv.GetRecords<MenuItemCsv>().ToList();
-        
-        foreach (var record in records)
-        {
-            var menuItem = new MenuItem
-            {
-                Name = record.Name,
-                Description = record.Description ?? "",
-                Price = record.Price,
-                Category = record.Category ?? "GENERAL",
-                IsAvailable = record.IsAvailable ?? true,
-                ImageUrl = record.ImageUrl
-            };
-            
-            _context.MenuItems.Add(menuItem);
-        }
-        
-        await _context.SaveChangesAsync();
-        return records.Count;
-    }
-
-    private async Task<int> ImportExtraItems(CsvReader csv)
-    {
-        var records = csv.GetRecords<ExtraItemCsv>().ToList();
-        
-        foreach (var record in records)
-        {
-            var extraItem = new ExtraItem
-            {
-                Name = record.Name,
-                Description = record.Description ?? "",
-                Price = record.Price,
-                IsAvailable = record.IsAvailable ?? true
-            };
-            
-            _context.ExtraItems.Add(extraItem);
-        }
-        
-        await _context.SaveChangesAsync();
-        return records.Count;
-    }
-
-    private async Task<int> ImportCompanies(CsvReader csv)
-    {
-        var records = csv.GetRecords<CompanyCsv>().ToList();
-        
-        foreach (var record in records)
-        {
-            var company = new Company
-            {
-                Name = record.Name,
-                Address = record.Address ?? "",
-                ContactPerson = record.ContactPerson ?? "",
-                ContactEmail = record.ContactEmail ?? "",
-                ContactPhone = record.ContactPhone ?? "",
-                IsActive = record.IsActive ?? true
-            };
-            
-            _context.Companies.Add(company);
-        }
-        
-        await _context.SaveChangesAsync();
-        return records.Count;
-    }
-
-    private async Task<int> ImportEmployees(CsvReader csv)
-    {
-        var records = csv.GetRecords<EmployeeCsv>().ToList();
-        
-        foreach (var record in records)
-        {
-            var employee = new Employee
-            {
-                FirstName = record.FirstName,
-                LastName = record.LastName,
-                Email = record.Email,
-                PhoneNumber = record.PhoneNumber,
-                Role = Enum.Parse<EmployeeRole>(record.Role ?? "Kitchen"),
-                IsActive = record.IsActive ?? true,
-                HiredDate = record.HiredDate
-            };
-            
-            _context.Employees.Add(employee);
-        }
-        
-        await _context.SaveChangesAsync();
-        return records.Count;
-    }
-
-    private async Task<int> ImportVendors(CsvReader csv)
-    {
-        var records = csv.GetRecords<VendorCsv>().ToList();
-        
-        foreach (var record in records)
-        {
-            var vendor = new Vendor
-            {
-                Name = record.Name,
-                ContactPerson = record.ContactPerson ?? "",
-                Phone = record.Phone ?? "",
-                Email = record.Email,
-                IsActive = record.IsActive ?? true
-            };
-            
-            _context.Vendors.Add(vendor);
-        }
-        
-        await _context.SaveChangesAsync();
-        return records.Count;
     }
 
     private async Task<int> ImportHistoricalOrders(CsvReader csv)
@@ -270,6 +121,18 @@ public class MigrationController : ControllerBase
             if (customerCache.TryGetValue(normalizedPhone, out var existingCustomer))
             {
                 customer = existingCustomer;
+
+                // Prefer the longer/more complete name when duplicates share the same phone
+                var existingFull = $"{existingCustomer.FirstName} {existingCustomer.LastName}".Trim();
+                var incomingFull = $"{firstName} {lastName}".Trim();
+
+                if (incomingFull.Length > existingFull.Length)
+                {
+                    existingCustomer.FirstName = firstName;
+                    existingCustomer.LastName = lastName;
+                    existingCustomer.UpdatedAt = DateTime.UtcNow;
+                    _context.Customers.Update(existingCustomer);
+                }
             }
             else
             {
@@ -534,55 +397,6 @@ public class MigrationController : ControllerBase
             return StatusCode(500, new { message = "Error clearing data", error = ex.Message });
         }
     }
-}
-
-// CSV mapping classes
-public class MenuItemCsv
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal Price { get; set; }
-    public string? Category { get; set; }
-    public bool? IsAvailable { get; set; }
-    public string? ImageUrl { get; set; }
-}
-
-public class ExtraItemCsv
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal Price { get; set; }
-    public bool? IsAvailable { get; set; }
-}
-
-public class CompanyCsv
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Address { get; set; }
-    public string? ContactPerson { get; set; }
-    public string? ContactEmail { get; set; }
-    public string? ContactPhone { get; set; }
-    public bool? IsActive { get; set; }
-}
-
-public class EmployeeCsv
-{
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
-    public string? Role { get; set; }
-    public bool? IsActive { get; set; }
-    public DateTime? HiredDate { get; set; }
-}
-
-public class VendorCsv
-{
-    public string Name { get; set; } = string.Empty;
-    public string? ContactPerson { get; set; }
-    public string? Phone { get; set; }
-    public string? Email { get; set; }
-    public bool? IsActive { get; set; }
 }
 
 public class HistoricalOrderCsv

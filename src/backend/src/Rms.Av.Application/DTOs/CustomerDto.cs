@@ -8,6 +8,8 @@ public class CustomerDto
     public string Phone { get; set; } = string.Empty;
     public string? Email { get; set; }
     public bool IsActive { get; set; }
+    public int TotalOrders { get; set; }
+    public int? DaysSinceLastOrder { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

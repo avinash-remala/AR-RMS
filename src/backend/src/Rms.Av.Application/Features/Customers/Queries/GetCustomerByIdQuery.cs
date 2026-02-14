@@ -21,6 +21,22 @@ public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery,
     public async Task<CustomerDto?> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
     {
         var customer = await _unitOfWork.Customers.GetByIdAsync(request.Id, cancellationToken);
-        return customer == null ? null : _mapper.Map<CustomerDto>(customer);
+        if (customer == null) return null;
+
+        var dto = _mapper.Map<CustomerDto>(customer);
+
+        var orders = await _unitOfWork.Orders.FindAsync(o => o.CustomerId == customer.Id, cancellationToken);
+        if (orders.Any())
+        {
+            dto.TotalOrders = orders.Count();
+            dto.DaysSinceLastOrder = (int)(DateTime.UtcNow.Date - orders.Max(o => o.OrderDate).Date).TotalDays;
+        }
+        else
+        {
+            dto.TotalOrders = 0;
+            dto.DaysSinceLastOrder = null;
+        }
+
+        return dto;
     }
 }

@@ -1,606 +1,501 @@
 {
-	"info": {
-		"_postman_id": "rms-av-collection-2026",
-		"name": "RMS-AV API",
-		"description": "Restaurant Management System - API Collection",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Orders",
-			"item": [
-				{
-					"name": "Get All Orders",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/orders",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "orders"]
-						},
-						"description": "Retrieves all orders"
-					}
-				},
-				{
-					"name": "Get Orders by Date",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/orders?date=2026-02-14",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "orders"],
-							"query": [
-								{
-									"key": "date",
-									"value": "2026-02-14",
-									"description": "Filter orders by specific date"
-								},
-								{
-									"key": "me",
-									"value": "false",
-									"description": "Filter by current customer",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Retrieves orders filtered by date"
-					}
-				},
-				{
-					"name": "Get Order by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/orders/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "orders", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{orderId}}",
-									"description": "Order GUID"
-								}
-							]
-						},
-						"description": "Retrieves a specific order with items and extras"
-					}
-				},
-				{
-					"name": "Create Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"buildingNumber\": \"3400\",\n  \"comments\": \"Extra spicy\",\n  \"status\": 1,\n  \"totalAmount\": 150.00,\n  \"orderDate\": \"2026-02-14T12:00:00Z\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menuItemId}}\",\n      \"quantity\": 1,\n      \"price\": 150.00\n    }\n  ],\n  \"extras\": []\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/orders",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "orders"]
-						},
-						"description": "Creates a new order (requires customerId)"
-					}
-				},
-				{
-					"name": "Cancel Order",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/orders/:id/cancel",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "orders", ":id", "cancel"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{orderId}}",
-									"description": "Order GUID"
-								}
-							]
-						},
-						"description": "Cancels an existing order"
-					}
-				}
-			]
-		},
-		{
-			"name": "Customers",
-			"item": [
-				{
-					"name": "Get All Customers",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers"]
-						},
-						"description": "Retrieves all active customers"
-					}
-				},
-				{
-					"name": "Search Customers",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers/search?q=john",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers", "search"],
-							"query": [
-								{
-									"key": "q",
-									"value": "john",
-									"description": "Search term (searches firstName, lastName, phone)"
-								}
-							]
-						},
-						"description": "Searches customers by first name, last name, or phone number"
-					}
-				},
-				{
-					"name": "Get Customer by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{customerId}}",
-									"description": "Customer GUID"
-								}
-							]
-						},
-						"description": "Retrieves a specific customer"
-					}
-				},
-				{
-					"name": "Create Customer",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.doe@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers"]
-						},
-						"description": "Creates a new customer (phone must be unique with country code)"
-					}
-				},
-				{
-					"name": "Update Customer",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": \"{{customerId}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.smith@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{customerId}}",
-									"description": "Customer GUID"
-								}
-							]
-						},
-						"description": "Updates an existing customer"
-					}
-				},
-				{
-					"name": "Delete Customer (Soft)",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/customers/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "customers", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{customerId}}",
-									"description": "Customer GUID"
-								}
-							]
-						},
-						"description": "Soft deletes a customer (sets IsActive to false)"
-					}
-				}
-			]
-		},
-		{
-			"name": "Companies",
-			"item": [
-				{
-					"name": "Get All Companies",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/companies",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "companies"]
-						},
-						"description": "Retrieves all active companies"
-					}
-				},
-				{
-					"name": "Get Company by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/companies/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "companies", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{companyId}}",
-									"description": "Company GUID"
-								}
-							]
-						},
-						"description": "Retrieves a specific company"
-					}
-				},
-				{
-					"name": "Create Company",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Acme Corp\",\n  \"address\": \"123 Main St, Plano, TX\",\n  \"contactPerson\": \"Jane Smith\",\n  \"contactEmail\": \"jane@acme.com\",\n  \"contactPhone\": \"9725551234\",\n  \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/companies",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "companies"]
-						},
-						"description": "Creates a new company"
-					}
-				},
-				{
-					"name": "Update Company",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": \"{{companyId}}\",\n  \"name\": \"Acme Corp Updated\",\n  \"address\": \"123 Main St, Plano, TX\",\n  \"contactPerson\": \"Jane Smith\",\n  \"contactEmail\": \"jane@acme.com\",\n  \"contactPhone\": \"9725551234\",\n  \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/companies/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "companies", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{companyId}}",
-									"description": "Company GUID"
-								}
-							]
-						},
-						"description": "Updates an existing company"
-					}
-				},
-				{
-					"name": "Delete Company (Soft)",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/companies/:id",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "companies", ":id"],
-							"variable": [
-								{
-									"key": "id",
-									"value": "{{companyId}}",
-									"description": "Company GUID"
-								}
-							]
-						},
-						"description": "Soft deletes a company (sets IsActive to false)"
-					}
-				}
-			]
-		},
-		{
-			"name": "Migration",
-			"item": [
-				{
-					"name": "Import Menu Items CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "CSV file with menu items"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=menuitems",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "menuitems",
-									"description": "Entity type to import (menuitems, extraitems, companies, employees, vendors, orders)"
-								}
-							]
-						},
-						"description": "Imports menu items from CSV file"
-					}
-				},
-				{
-					"name": "Import Extra Items CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "CSV file with extra items"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=extraitems",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "extraitems"
-								}
-							]
-						},
-						"description": "Imports extra items from CSV file"
-					}
-				},
-				{
-					"name": "Import Companies CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "CSV file with companies"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=companies",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "companies"
-								}
-							]
-						},
-						"description": "Imports companies from CSV file"
-					}
-				},
-				{
-					"name": "Import Employees CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "CSV file with employees"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=employees",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "employees"
-								}
-							]
-						},
-						"description": "Imports employees from CSV file"
-					}
-				},
-				{
-					"name": "Import Vendors CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": [],
-									"description": "CSV file with vendors"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=vendors",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "vendors"
-								}
-							]
-						},
-						"description": "Imports vendors from CSV file"
-					}
-				},
-				{
-					"name": "Import Historical Orders CSV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "file",
-									"type": "file",
-									"src": "/Users/harichintha/a2z/Repos/rms-av/src/backend/src/Data/att orders.csv",
-									"description": "Historical orders CSV file"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/import-csv?entityType=orders",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "import-csv"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "orders"
-								}
-							]
-						},
-						"description": "Imports historical orders from CSV file (att orders.csv format)"
-					}
-				},
-				{
-					"name": "Clear Menu Items",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/clear-data?entityType=menuitems",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "clear-data"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "menuitems",
-									"description": "Entity type to clear (menuitems, extraitems, companies, employees, vendors, orders)"
-								}
-							]
-						},
-						"description": "Clears all menu items (non-production only)"
-					}
-				},
-				{
-					"name": "Clear Orders",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/migration/clear-data?entityType=orders",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "migration", "clear-data"],
-							"query": [
-								{
-									"key": "entityType",
-									"value": "orders"
-								}
-							]
-						},
-						"description": "Clears all orders (non-production only)"
-					}
-				}
-			]
-		}
-	],
-	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:5263",
-			"type": "string"
-		},
-		{
-			"key": "orderId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "customerId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "menuItemId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "companyId",
-			"value": "",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "rms-av-collection-2026",
+    "name": "RMS-AV API",
+    "description": "Restaurant Management System - API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "description": "Retrieves all orders"
+          }
+        },
+        {
+          "name": "Get Orders by Date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders?date=2026-02-14",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-14",
+                  "description": "Filter orders by specific date"
+                }
+              ]
+            },
+            "description": "Retrieves orders filtered by date"
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{orderId}}",
+                  "description": "Order GUID"
+                }
+              ]
+            },
+            "description": "Retrieves a specific order with items and extras"
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"buildingNumber\": \"3400\",\n  \"comments\": \"Extra spicy\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menuItemId}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"extras\": [\n    {\n      \"extraItemId\": \"{{extraItemId}}\",\n      \"quantity\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "description": "Creates a new order (requires customerId)"
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{orderId}}",
+                  "description": "Order GUID"
+                }
+              ]
+            },
+            "description": "Cancels an existing order"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers"
+              ]
+            },
+            "description": "Retrieves all active customers (response now includes totalOrders and daysSinceLastOrder)"
+          }
+        },
+        {
+          "name": "Search Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/search?q=john",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "john",
+                  "description": "Search term (searches firstName, lastName, phone)"
+                }
+              ]
+            },
+            "description": "Searches customers by first name, last name, or phone number (response includes totalOrders and daysSinceLastOrder)"
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{customerId}}",
+                  "description": "Customer GUID"
+                }
+              ]
+            },
+            "description": "Retrieves a specific customer (includes totalOrders and daysSinceLastOrder)"
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.doe@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers"
+              ]
+            },
+            "description": "Creates a new customer (phone must be unique with country code)"
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{customerId}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.smith@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{customerId}}",
+                  "description": "Customer GUID"
+                }
+              ]
+            },
+            "description": "Updates an existing customer"
+          }
+        },
+        {
+          "name": "Delete Customer (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{customerId}}",
+                  "description": "Customer GUID"
+                }
+              ]
+            },
+            "description": "Soft deletes a customer (sets IsActive to false)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Get All Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/companies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "companies"
+              ]
+            },
+            "description": "Retrieves all active companies"
+          }
+        },
+        {
+          "name": "Get Company by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/companies/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "companies",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{companyId}}",
+                  "description": "Company GUID"
+                }
+              ]
+            },
+            "description": "Retrieves a specific company"
+          }
+        },
+        {
+          "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corp\",\n  \"address\": \"123 Main St, Plano, TX\",\n  \"contactPerson\": \"Jane Smith\",\n  \"contactEmail\": \"jane@acme.com\",\n  \"contactPhone\": \"9725551234\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/companies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "companies"
+              ]
+            },
+            "description": "Creates a new company"
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{companyId}}\",\n  \"name\": \"Acme Corp Updated\",\n  \"address\": \"123 Main St, Plano, TX\",\n  \"contactPerson\": \"Jane Smith\",\n  \"contactEmail\": \"jane@acme.com\",\n  \"contactPhone\": \"9725551234\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/companies/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "companies",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{companyId}}",
+                  "description": "Company GUID"
+                }
+              ]
+            },
+            "description": "Updates an existing company"
+          }
+        },
+        {
+          "name": "Delete Company (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/companies/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "companies",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{companyId}}",
+                  "description": "Company GUID"
+                }
+              ]
+            },
+            "description": "Soft deletes a company (sets IsActive to false)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Migration",
+      "item": [
+        {
+          "name": "Import ATT Orders CSV",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/migration/import-att-orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "migration",
+                "import-att-orders"
+              ]
+            },
+            "description": "Clears existing orders/items/extras and imports ATT orders from fixed file src/backend/src/Data/att orders.csv"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5263",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "menuItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "companyId",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }
