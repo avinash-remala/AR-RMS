@@ -1,0 +1,284 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AV Lunch Management System API",
+    "version": "1.0.0",
+    "description": "Backend API for Admin, Employee, and User portals (all actions stored in DB)"
+  },
+  "servers": [
+    { "url": "http://localhost:8080", "description": "Local Development" },
+    { "url": "https://api.av.com", "description": "Production" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": { "username": { "type": "string" }, "password": { "type": "string", "format": "password" } }
+      },
+      "OtpSendRequest": {
+        "type": "object",
+        "required": ["phone"],
+        "properties": { "phone": { "type": "string", "example": "+12145551234" } }
+      },
+      "OtpVerifyRequest": {
+        "type": "object",
+        "required": ["phone", "otp"],
+        "properties": { "phone": { "type": "string" }, "otp": { "type": "string", "example": "123456" } }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": { "accessToken": { "type": "string" }, "refreshToken": { "type": "string" }, "expiresIn": { "type": "integer" } }
+      },
+      "OrderCreateRequest": {
+        "type": "object",
+        "required": ["phone", "buildingNumber", "items"],
+        "properties": {
+          "fullName": { "type": "string" },
+          "phone": { "type": "string" },
+          "buildingNumber": { "type": "string" },
+          "comments": { "type": "string" },
+          "items": { "type": "array", "items": { "type": "object" } },
+          "extras": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "OrderUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "buildingNumber": { "type": "string" },
+          "comments": { "type": "string" },
+          "items": { "type": "array", "items": { "type": "object" } },
+          "extras": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "VendorInvoiceCreateRequest": {
+        "type": "object",
+        "required": ["vendorId", "amount", "fileUrl"],
+        "properties": { "vendorId": { "type": "string" }, "amount": { "type": "number" }, "fileUrl": { "type": "string" }, "notes": { "type": "string" } }
+      },
+      "VendorPaymentCreateRequest": {
+        "type": "object",
+        "required": ["vendorId", "amount"],
+        "properties": { "vendorId": { "type": "string" }, "amount": { "type": "number" }, "method": { "type": "string" }, "paidAt": { "type": "string", "format": "date-time" }, "notes": { "type": "string" } }
+      },
+      "EmployeeHourCreateRequest": {
+        "type": "object",
+        "required": ["workDate", "hours"],
+        "properties": { "workDate": { "type": "string", "format": "date" }, "hours": { "type": "number" }, "rate": { "type": "number" }, "notes": { "type": "string" } }
+      },
+      "EmployeePaymentCreateRequest": {
+        "type": "object",
+        "required": ["employeeId", "amount"],
+        "properties": { "employeeId": { "type": "string" }, "amount": { "type": "number" }, "method": { "type": "string" }, "paidAt": { "type": "string", "format": "date-time" }, "notes": { "type": "string" } }
+      }
+    }
+  },
+  "security": [{ "BearerAuth": [] }],
+  "paths": {
+    "/api/v1/health": {
+      "get": { "summary": "Health check", "security": [], "responses": { "200": { "description": "OK" } } }
+    },
+
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login (Admin/Employee)",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } } },
+        "responses": { "200": { "description": "Login successful", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } } }
+      }
+    },
+    "/api/v1/auth/otp/send": {
+      "post": {
+        "summary": "Send OTP (User)",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OtpSendRequest" } } } },
+        "responses": { "200": { "description": "OTP sent" } }
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "summary": "Verify OTP (User)",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OtpVerifyRequest" } } } },
+        "responses": { "200": { "description": "Verified", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } } }
+      }
+    },
+
+    "/api/v1/users/me": {
+      "get": { "summary": "Get my profile", "responses": { "200": { "description": "Profile" } } },
+      "patch": {
+        "summary": "Update my profile",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/api/v1/users/me/recommendation": {
+      "get": { "summary": "Get recommendation from previous orders", "responses": { "200": { "description": "Recommendation" } } }
+    },
+
+    "/api/v1/orders": {
+      "get": {
+        "summary": "List orders (user: me=true)",
+        "parameters": [{ "name": "me", "in": "query", "required": false, "schema": { "type": "boolean" } }],
+        "responses": { "200": { "description": "Orders list" } }
+      },
+      "post": {
+        "summary": "Place order (User)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderCreateRequest" } } } },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "summary": "Get order by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Order details" } }
+      }
+    },
+    "/api/v1/orders/{id}/cancel": {
+      "patch": {
+        "summary": "Cancel my order",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Cancelled" } }
+      }
+    },
+
+    "/api/v1/employee/orders": {
+      "get": {
+        "summary": "Employee list orders",
+        "parameters": [{ "name": "date", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } }],
+        "responses": { "200": { "description": "Orders list" } }
+      },
+      "post": {
+        "summary": "Employee add order (manual)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderCreateRequest" } } } },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/v1/employee/orders/{id}": {
+      "patch": {
+        "summary": "Employee update order",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderUpdateRequest" } } } },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+
+    "/api/v1/admin/orders": {
+      "get": {
+        "summary": "Admin list orders",
+        "parameters": [
+          { "name": "date", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "building", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "mealType", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Orders list" } }
+      }
+    },
+    "/api/v1/admin/orders/{id}": {
+      "patch": {
+        "summary": "Admin update order",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderUpdateRequest" } } } },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Admin delete order",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+
+    "/api/v1/menu-items": {
+      "get": { "summary": "List lunch boxes", "responses": { "200": { "description": "Menu list" } } },
+      "post": { "summary": "Create lunch box (Admin)", "responses": { "201": { "description": "Created" } } }
+    },
+    "/api/v1/menu-items/{id}": {
+      "patch": {
+        "summary": "Update lunch box (Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Delete lunch box (Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+
+    "/api/v1/extra-items": {
+      "get": { "summary": "List extra items", "responses": { "200": { "description": "Extras list" } } },
+      "post": { "summary": "Create extra item (Admin)", "responses": { "201": { "description": "Created" } } }
+    },
+    "/api/v1/extra-items/{id}": {
+      "patch": {
+        "summary": "Update extra item (Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Delete extra item (Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+
+    "/api/v1/vendor-invoices": {
+      "get": { "summary": "List vendor invoices", "responses": { "200": { "description": "Invoice list" } } },
+      "post": {
+        "summary": "Employee uploads vendor invoice (PENDING)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VendorInvoiceCreateRequest" } } } },
+        "responses": { "201": { "description": "Uploaded" } }
+      }
+    },
+    "/api/v1/vendor-invoices/{id}/approve": {
+      "patch": {
+        "summary": "Admin approve invoice",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Approved" } }
+      }
+    },
+    "/api/v1/vendor-invoices/{id}/reject": {
+      "patch": {
+        "summary": "Admin reject invoice",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Rejected" } }
+      }
+    },
+    "/api/v1/vendor-payments": {
+      "post": {
+        "summary": "Admin records vendor payment",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VendorPaymentCreateRequest" } } } },
+        "responses": { "201": { "description": "Payment recorded" } }
+      }
+    },
+
+    "/api/v1/employees": {
+      "get": { "summary": "List employees (Admin)", "responses": { "200": { "description": "Employees list" } } },
+      "post": { "summary": "Create employee (Admin)", "responses": { "201": { "description": "Created" } } }
+    },
+    "/api/v1/employees/{id}/hours": {
+      "post": {
+        "summary": "Admin add employee hours",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmployeeHourCreateRequest" } } } },
+        "responses": { "201": { "description": "Hours added" } }
+      }
+    },
+    "/api/v1/employee-payments": {
+      "post": {
+        "summary": "Admin records employee payment",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmployeePaymentCreateRequest" } } } },
+        "responses": { "201": { "description": "Payment recorded" } }
+      }
+    },
+
+    "/api/v1/admin/dashboard/metrics": {
+      "get": { "summary": "Admin dashboard metrics", "responses": { "200": { "description": "Dashboard data" } } }
+    }
+  }
+}
