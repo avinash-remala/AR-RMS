@@ -1,0 +1,34 @@
+services:
+  rms-av-api:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: rms-av-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/rmsav.db
+    volumes:
+      - ./data:/app/data
+    networks:
+      - rms-av-network
+
+  rms-av-web:
+    build:
+      context: ./src/frontend/rms-av-web
+      dockerfile: Dockerfile
+    container_name: rms-av-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - rms-av-api
+    networks:
+      - rms-av-network
+
+networks:
+  rms-av-network:
+    driver: bridge
+
+volumes:
+  rms-av-data:
