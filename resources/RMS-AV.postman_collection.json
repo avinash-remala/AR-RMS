@@ -80,14 +80,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"customerId\": null,\n  \"fullName\": \"John Doe\",\n  \"phone\": \"1234567890\",\n  \"buildingNumber\": \"3400\",\n  \"comments\": \"Extra spicy\",\n  \"status\": \"Pending\",\n  \"totalAmount\": 150.00,\n  \"orderDate\": \"2026-02-14T12:00:00Z\",\n  \"items\": [\n    {\n      \"menuItemId\": \"00000000-0000-0000-0000-000000000000\",\n      \"quantity\": 1,\n      \"price\": 150.00\n    }\n  ],\n  \"extras\": []\n}"
+							"raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"buildingNumber\": \"3400\",\n  \"comments\": \"Extra spicy\",\n  \"status\": 1,\n  \"totalAmount\": 150.00,\n  \"orderDate\": \"2026-02-14T12:00:00Z\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menuItemId}}\",\n      \"quantity\": 1,\n      \"price\": 150.00\n    }\n  ],\n  \"extras\": []\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/orders",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "orders"]
 						},
-						"description": "Creates a new order"
+						"description": "Creates a new order (requires customerId)"
 					}
 				},
 				{
@@ -108,6 +108,135 @@
 							]
 						},
 						"description": "Cancels an existing order"
+					}
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "Get All Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Retrieves all active customers"
+					}
+				},
+				{
+					"name": "Search Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/search?q=john",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "john",
+									"description": "Search term (searches firstName, lastName, phone)"
+								}
+							]
+						},
+						"description": "Searches customers by first name, last name, or phone number"
+					}
+				},
+				{
+					"name": "Get Customer by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer GUID"
+								}
+							]
+						},
+						"description": "Retrieves a specific customer"
+					}
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.doe@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers"]
+						},
+						"description": "Creates a new customer (phone must be unique with country code)"
+					}
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"{{customerId}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+19725551234\",\n  \"email\": \"john.smith@example.com\",\n  \"passwordHash\": \"hashed_password_here\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer GUID"
+								}
+							]
+						},
+						"description": "Updates an existing customer"
+					}
+				},
+				{
+					"name": "Delete Customer (Soft)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customers", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customerId}}",
+									"description": "Customer GUID"
+								}
+							]
+						},
+						"description": "Soft deletes a customer (sets IsActive to false)"
 					}
 				}
 			]
@@ -450,11 +579,21 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://localhost:5000",
+			"value": "http://localhost:5263",
 			"type": "string"
 		},
 		{
 			"key": "orderId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "menuItemId",
 			"value": "",
 			"type": "string"
 		},

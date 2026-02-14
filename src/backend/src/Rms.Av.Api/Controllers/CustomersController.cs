@@ -1,7 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Rms.Av.Domain.Entities;
-using Rms.Av.Infrastructure.Persistence;
+using Rms.Av.Application.DTOs;
+using Rms.Av.Application.Features.Customers.Commands;
+using Rms.Av.Application.Features.Customers.Queries;
 
 namespace Rms.Av.Api.Controllers;
 
@@ -9,147 +10,102 @@ namespace Rms.Av.Api.Controllers;
 [Route("api/v1/customers")]
 public class CustomersController : ControllerBase
 {
-    private readonly RmsAvDbContext _context;
+    private readonly IMediator _mediator;
     private readonly ILogger<CustomersController> _logger;
 
-    public CustomersController(RmsAvDbContext context, ILogger<CustomersController> logger)
+    public CustomersController(IMediator mediator, ILogger<CustomersController> logger)
     {
-        _context = context;
+        _mediator = mediator;
         _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
     {
-        return await _context.Customers
-            .Where(c => c.IsActive)
-            .OrderBy(c => c.FirstName)
-            .ThenBy(c => c.LastName)
-            .ToListAsync();
+        var query = new GetAllCustomersQuery();
+        var customers = await _mediator.Send(query);
+        return Ok(customers);
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<Customer>>> SearchCustomers([FromQuery] string q)
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> SearchCustomers([FromQuery] string q)
     {
         if (string.IsNullOrWhiteSpace(q))
         {
             return BadRequest(new { message = "Search query cannot be empty" });
         }
 
-        var searchTerm = q.ToLower().Trim();
-
-        var customers = await _context.Customers
-            .Where(c => c.IsActive && (
-                c.FirstName.ToLower().Contains(searchTerm) ||
-                c.LastName.ToLower().Contains(searchTerm) ||
-                c.Phone.Contains(searchTerm)
-            ))
-            .OrderBy(c => c.FirstName)
-            .ThenBy(c => c.LastName)
-            .ToListAsync();
-
+        var query = new SearchCustomersQuery(q);
+        var customers = await _mediator.Send(query);
         return Ok(customers);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Customer>> GetCustomer(Guid id)
+    public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id)
     {
-        var customer = await _context.Customers.FindAsync(id);
+        var query = new GetCustomerByIdQuery(id);
+        var customer = await _mediator.Send(query);
 
         if (customer == null)
         {
             return NotFound(new { message = "Customer not found" });
         }
 
-        return customer;
+        return Ok(customer);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Customer>> CreateCustomer(Customer customer)
+    public async Task<ActionResult<CustomerDto>> CreateCustomer(CreateCustomerDto customerDto)
     {
-        // Check if phone already exists
-        var existingCustomer = await _context.Customers
-            .FirstOrDefaultAsync(c => c.Phone == customer.Phone);
-
-        if (existingCustomer != null)
+        try
         {
-            return Conflict(new { message = "A customer with this phone number already exists" });
+            var command = new CreateCustomerCommand(customerDto);
+            var customer = await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
         }
-
-        _context.Customers.Add(customer);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCustomer(Guid id, Customer customer)
+    public async Task<IActionResult> UpdateCustomer(Guid id, UpdateCustomerDto customerDto)
     {
-        if (id != customer.Id)
+        if (id != customerDto.Id)
         {
             return BadRequest(new { message = "ID mismatch" });
         }
 
-        var existingCustomer = await _context.Customers.FindAsync(id);
-        if (existingCustomer == null)
-        {
-            return NotFound(new { message = "Customer not found" });
-        }
-
-        // Check if phone is being changed and if it conflicts with another customer
-        if (existingCustomer.Phone != customer.Phone)
-        {
-            var phoneExists = await _context.Customers
-                .AnyAsync(c => c.Phone == customer.Phone && c.Id != id);
-
-            if (phoneExists)
-            {
-                return Conflict(new { message = "A customer with this phone number already exists" });
-            }
-        }
-
-        existingCustomer.FirstName = customer.FirstName;
-        existingCustomer.LastName = customer.LastName;
-        existingCustomer.Phone = customer.Phone;
-        existingCustomer.Email = customer.Email;
-        existingCustomer.IsActive = customer.IsActive;
-        existingCustomer.UpdatedAt = DateTime.UtcNow;
-
         try
         {
-            await _context.SaveChangesAsync();
+            var command = new UpdateCustomerCommand(customerDto);
+            await _mediator.Send(command);
+            return NoContent();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (KeyNotFoundException ex)
         {
-            if (!await CustomerExists(id))
-            {
-                return NotFound(new { message = "Customer not found" });
-            }
-            throw;
+            return NotFound(new { message = ex.Message });
         }
-
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCustomer(Guid id)
     {
-        var customer = await _context.Customers.FindAsync(id);
-        if (customer == null)
+        try
         {
-            return NotFound(new { message = "Customer not found" });
+            var command = new DeleteCustomerCommand(id);
+            await _mediator.Send(command);
+            return NoContent();
         }
-
-        // Soft delete
-        customer.IsActive = false;
-        customer.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    private async Task<bool> CustomerExists(Guid id)
-    {
-        return await _context.Customers.AnyAsync(e => e.Id == id);
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 }
