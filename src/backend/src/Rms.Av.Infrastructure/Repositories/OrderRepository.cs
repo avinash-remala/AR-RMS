@@ -14,6 +14,7 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         var query = _dbSet
             .Include(o => o.Items)
             .Include(o => o.Extras)
+            .AsNoTracking()
             .AsQueryable();
 
         if (date.HasValue)

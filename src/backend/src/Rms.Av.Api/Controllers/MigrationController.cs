@@ -76,9 +76,13 @@ public class MigrationController : ControllerBase
         var menuItemCache = await _context.MenuItems
             .ToDictionaryAsync(m => m.Name.ToLower(), m => m);
         
-        // Cache customers by phone number (unique key)
+        // Cache customers by phone number and by last 10 digits to merge country-code variants
         var customerCache = await _context.Customers
             .ToDictionaryAsync(c => c.Phone, c => c);
+        var customerLast10Cache = customerCache.Values
+            .Where(c => c.Phone.Length >= 10)
+            .GroupBy(c => c.Phone[^10..])
+            .ToDictionary(g => g.Key, g => g.First());
         
         foreach (var record in records)
         {
@@ -108,6 +112,7 @@ public class MigrationController : ControllerBase
             
             // Normalize phone number with country code
             var normalizedPhone = NormalizePhoneNumber(record.PhoneNumber);
+            var last10 = normalizedPhone.Length >= 10 ? normalizedPhone[^10..] : "";
             
             // Skip if phone is invalid
             if (string.IsNullOrWhiteSpace(normalizedPhone))
@@ -118,7 +123,20 @@ public class MigrationController : ControllerBase
             
             // Find or create customer
             Customer customer;
-            if (customerCache.TryGetValue(normalizedPhone, out var existingCustomer))
+            if (!string.IsNullOrEmpty(last10) && customerLast10Cache.TryGetValue(last10, out var existingByLast10))
+            {
+                // Normalize phone to +91 plus last10 to keep it consistent
+                var targetPhone = $"+91{last10}";
+                if (existingByLast10.Phone != targetPhone)
+                {
+                    existingByLast10.Phone = targetPhone;
+                    existingByLast10.CountryCode = "91";
+                    _context.Customers.Update(existingByLast10);
+                    customerCache[targetPhone] = existingByLast10;
+                }
+                customer = existingByLast10;
+            }
+            else if (customerCache.TryGetValue(normalizedPhone, out var existingCustomer))
             {
                 customer = existingCustomer;
 
@@ -130,6 +148,7 @@ public class MigrationController : ControllerBase
                 {
                     existingCustomer.FirstName = firstName;
                     existingCustomer.LastName = lastName;
+                    existingCustomer.CountryCode = GetCountryCode(normalizedPhone);
                     existingCustomer.UpdatedAt = DateTime.UtcNow;
                     _context.Customers.Update(existingCustomer);
                 }
@@ -142,12 +161,15 @@ public class MigrationController : ControllerBase
                     FirstName = firstName,
                     LastName = lastName,
                     Phone = normalizedPhone,
+                    CountryCode = GetCountryCode(normalizedPhone),
                     IsActive = true
                 };
                 _context.Customers.Add(customer);
                 await _context.SaveChangesAsync();
                 
                 customerCache[normalizedPhone] = customer;
+                if (!string.IsNullOrEmpty(last10))
+                    customerLast10Cache[last10] = customer;
             }
             
             // Try to find existing menu item, or create a placeholder
@@ -272,16 +294,20 @@ public class MigrationController : ControllerBase
         if (string.IsNullOrWhiteSpace(cleaned))
             return "";
         
-        // Handle Indian numbers (12 digits starting with 91)
-        if (cleaned.Length == 12 && cleaned.StartsWith("91"))
+        // Normalize Indian numbers with leading 91 to +91 + last 10 digits
+        if (cleaned.Length >= 12 && cleaned.StartsWith("91"))
         {
-            return $"+{cleaned}"; // +91xxxxxxxxxx
+            var last10 = cleaned[^10..];
+            return $"+91{last10}";
         }
         
-        // Handle US numbers (10 digits)
+        // Normalize plain 10-digit numbers:
+        // If starting with 6/7/8/9 assume India (+91); otherwise default to US (+1)
         if (cleaned.Length == 10)
         {
-            return $"+1{cleaned}"; // +1xxxxxxxxxx
+            if ("6789".Contains(cleaned[0]))
+                return $"+91{cleaned}";
+            return $"+1{cleaned}";
         }
         
         // Handle US numbers with country code already (11 digits starting with 1)
@@ -292,6 +318,17 @@ public class MigrationController : ControllerBase
         
         // Return as-is with + if it's a valid length but unknown format
         return cleaned.Length >= 10 ? $"+{cleaned}" : "";
+    }
+
+    private string GetCountryCode(string normalizedPhone)
+    {
+        if (string.IsNullOrWhiteSpace(normalizedPhone) || !normalizedPhone.StartsWith("+"))
+            return "";
+        var digits = new string(normalizedPhone.Skip(1).TakeWhile(char.IsDigit).ToArray());
+        // Country codes are 1-3 digits; take up to length-10 if long enough, else first 2 by default
+        if (digits.Length > 10)
+            return digits[..(digits.Length - 10)];
+        return digits.Length >= 2 ? digits[..2] : digits;
     }
 
     private (string firstName, string lastName) SplitName(string fullName)
