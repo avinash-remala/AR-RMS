@@ -27,11 +27,14 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
             throw new KeyNotFoundException("Customer not found");
         }
 
+        // Extract phone number without country code for duplicate check
+        var phoneOnly = ExtractPhone(request.CustomerDto.Phone);
+        
         // Check if phone is being changed and if it conflicts
-        if (customer.Phone != request.CustomerDto.Phone)
+        if (customer.Phone != phoneOnly)
         {
             var phoneExists = await _unitOfWork.Customers
-                .AnyAsync(c => c.Phone == request.CustomerDto.Phone && c.Id != request.CustomerDto.Id, cancellationToken);
+                .AnyAsync(c => c.Phone == phoneOnly && c.Id != request.CustomerDto.Id, cancellationToken);
 
             if (phoneExists)
             {
@@ -46,5 +49,20 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
+    }
+
+    // Helper to extract phone without country code
+    private static string ExtractPhone(string fullPhone)
+    {
+        if (string.IsNullOrWhiteSpace(fullPhone)) return string.Empty;
+        
+        // If phone starts with +, extract the number part (last 10 digits)
+        if (fullPhone.StartsWith("+"))
+        {
+            var digits = fullPhone.Substring(1);
+            return digits.Length >= 10 ? digits.Substring(digits.Length - 10) : digits;
+        }
+        
+        return fullPhone;
     }
 }

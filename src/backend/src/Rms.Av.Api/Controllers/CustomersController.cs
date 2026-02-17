@@ -40,6 +40,14 @@ public class CustomersController : ControllerBase
         return Ok(customers);
     }
 
+    [HttpGet("with-order-stats")]
+    public async Task<ActionResult<IEnumerable<CustomerWithOrderStatsDto>>> GetCustomersWithOrderStats()
+    {
+        var query = new GetCustomersWithOrderStatsQuery();
+        var customers = await _mediator.Send(query);
+        return Ok(customers);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id)
     {

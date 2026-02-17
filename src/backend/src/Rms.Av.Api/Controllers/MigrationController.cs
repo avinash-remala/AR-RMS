@@ -111,11 +111,11 @@ public class MigrationController : ControllerBase
                 .Where(s => !string.IsNullOrWhiteSpace(s)));
             
             // Normalize phone number with country code
-            var normalizedPhone = NormalizePhoneNumber(record.PhoneNumber);
-            var last10 = normalizedPhone.Length >= 10 ? normalizedPhone[^10..] : "";
+            var (phone, countryCode) = NormalizePhoneNumber(record.PhoneNumber);
+            var last10 = phone.Length >= 10 ? phone[^10..] : "";
             
             // Skip if phone is invalid
-            if (string.IsNullOrWhiteSpace(normalizedPhone))
+            if (string.IsNullOrWhiteSpace(phone))
                 continue;
             
             // Split name into first and last name
@@ -125,33 +125,52 @@ public class MigrationController : ControllerBase
             Customer customer;
             if (!string.IsNullOrEmpty(last10) && customerLast10Cache.TryGetValue(last10, out var existingByLast10))
             {
-                // Normalize phone to +91 plus last10 to keep it consistent
-                var targetPhone = $"+91{last10}";
-                if (existingByLast10.Phone != targetPhone)
+                // Check if phone number needs updating (store only the number, not with country code)
+                if (existingByLast10.Phone != phone)
                 {
-                    existingByLast10.Phone = targetPhone;
-                    existingByLast10.CountryCode = "91";
-                    _context.Customers.Update(existingByLast10);
-                    customerCache[targetPhone] = existingByLast10;
+                    if (customerCache.ContainsKey(phone))
+                    {
+                        // Target phone already exists, just use that customer  
+                        customer = customerCache[phone];
+                        
+                        // Update to longer name if needed
+                        await UpdateCustomerNameIfLonger(customer, firstName, lastName, countryCode);
+                    }
+                    else
+                    {
+                        // Remove old phone from cache
+                        customerCache.Remove(existingByLast10.Phone);
+                        
+                        // Update customer phone
+                        existingByLast10.Phone = phone;
+                        existingByLast10.CountryCode = countryCode;
+                        existingByLast10.UpdatedAt = DateTime.UtcNow;
+                        
+                        // Update to longer name if needed
+                        await UpdateCustomerNameIfLonger(existingByLast10, firstName, lastName, countryCode);
+                        
+                        _context.Customers.Update(existingByLast10);
+                        await _context.SaveChangesAsync();
+                        
+                        // Add to cache with new phone
+                        customerCache[phone] = existingByLast10;
+                        customer = existingByLast10;
+                    }
                 }
-                customer = existingByLast10;
+                else
+                {
+                    customer = existingByLast10;
+                    
+                    // Update to longer name if needed
+                    await UpdateCustomerNameIfLonger(customer, firstName, lastName, countryCode);
+                }
             }
-            else if (customerCache.TryGetValue(normalizedPhone, out var existingCustomer))
+            else if (customerCache.TryGetValue(phone, out var existingCustomer))
             {
                 customer = existingCustomer;
 
-                // Prefer the longer/more complete name when duplicates share the same phone
-                var existingFull = $"{existingCustomer.FirstName} {existingCustomer.LastName}".Trim();
-                var incomingFull = $"{firstName} {lastName}".Trim();
-
-                if (incomingFull.Length > existingFull.Length)
-                {
-                    existingCustomer.FirstName = firstName;
-                    existingCustomer.LastName = lastName;
-                    existingCustomer.CountryCode = GetCountryCode(normalizedPhone);
-                    existingCustomer.UpdatedAt = DateTime.UtcNow;
-                    _context.Customers.Update(existingCustomer);
-                }
+                // Update to longer name if needed
+                await UpdateCustomerNameIfLonger(customer, firstName, lastName, countryCode);
             }
             else
             {
@@ -160,14 +179,14 @@ public class MigrationController : ControllerBase
                 {
                     FirstName = firstName,
                     LastName = lastName,
-                    Phone = normalizedPhone,
-                    CountryCode = GetCountryCode(normalizedPhone),
+                    Phone = phone,
+                    CountryCode = countryCode,
                     IsActive = true
                 };
                 _context.Customers.Add(customer);
                 await _context.SaveChangesAsync();
                 
-                customerCache[normalizedPhone] = customer;
+                customerCache[phone] = customer;
                 if (!string.IsNullOrEmpty(last10))
                     customerLast10Cache[last10] = customer;
             }
@@ -230,6 +249,23 @@ public class MigrationController : ControllerBase
         return importedCount;
     }
 
+    private async Task UpdateCustomerNameIfLonger(Customer customer, string firstName, string lastName, string countryCode)
+    {
+        // Prefer the longer/more complete name when duplicates share the same phone
+        var existingFull = $"{customer.FirstName} {customer.LastName}".Trim();
+        var incomingFull = $"{firstName} {lastName}".Trim();
+
+        if (incomingFull.Length > existingFull.Length)
+        {
+            customer.FirstName = firstName;
+            customer.LastName = lastName;
+            customer.CountryCode = countryCode;
+            customer.UpdatedAt = DateTime.UtcNow;
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
+        }
+    }
+
     private DateTime ParseOrderDate(string dateString)
     {
         // Handle multiple date formats: "7/23/25", "08/04/2025"
@@ -283,41 +319,48 @@ public class MigrationController : ControllerBase
         return match.Success ? match.Groups[1].Value : address.Trim();
     }
 
-    private string NormalizePhoneNumber(string phoneNumber)
+    private (string phone, string countryCode) NormalizePhoneNumber(string phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.ToUpper() == "NA")
-            return "";
+            return ("", "");
         
         // Remove spaces and non-digit characters
         var cleaned = System.Text.RegularExpressions.Regex.Replace(phoneNumber, @"[^\d]", "");
         
         if (string.IsNullOrWhiteSpace(cleaned))
-            return "";
+            return ("", "");
         
-        // Normalize Indian numbers with leading 91 to +91 + last 10 digits
+        // Normalize Indian numbers with leading 91 to last 10 digits
         if (cleaned.Length >= 12 && cleaned.StartsWith("91"))
         {
             var last10 = cleaned[^10..];
-            return $"+91{last10}";
+            return (last10, "91");
         }
         
         // Normalize plain 10-digit numbers:
-        // If starting with 6/7/8/9 assume India (+91); otherwise default to US (+1)
+        // If starting with 6/7/8/9 assume India (91); otherwise default to US (1)
         if (cleaned.Length == 10)
         {
             if ("6789".Contains(cleaned[0]))
-                return $"+91{cleaned}";
-            return $"+1{cleaned}";
+                return (cleaned, "91");
+            return (cleaned, "1");
         }
         
         // Handle US numbers with country code already (11 digits starting with 1)
         if (cleaned.Length == 11 && cleaned.StartsWith("1"))
         {
-            return $"+{cleaned}";
+            return (cleaned[1..], "1");
         }
         
-        // Return as-is with + if it's a valid length but unknown format
-        return cleaned.Length >= 10 ? $"+{cleaned}" : "";
+        // Return as-is if it's a valid length but unknown format
+        if (cleaned.Length >= 10)
+        {
+            var last10 = cleaned[^10..];
+            var cc = cleaned.Length > 10 ? cleaned[..(cleaned.Length - 10)] : "";
+            return (last10, cc);
+        }
+        
+        return ("", "");
     }
 
     private string GetCountryCode(string normalizedPhone)

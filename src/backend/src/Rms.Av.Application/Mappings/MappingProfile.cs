@@ -9,21 +9,28 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // Customer mappings
-        CreateMap<Customer, CustomerDto>();
+        CreateMap<Customer, CustomerDto>()
+            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => 
+                !string.IsNullOrEmpty(src.CountryCode) ? $"+{src.CountryCode}{src.Phone}" : src.Phone));
+        
         CreateMap<CreateCustomerDto, Customer>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
+            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => ExtractPhone(src.Phone)))
+            .ForMember(dest => dest.CountryCode, opt => opt.MapFrom(src => ExtractCountryCode(src.Phone)));
         
         CreateMap<UpdateCustomerDto, Customer>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => ExtractPhone(src.Phone)))
+            .ForMember(dest => dest.CountryCode, opt => opt.MapFrom(src => ExtractCountryCode(src.Phone)));
 
         // MenuItem mappings
         CreateMap<MenuItem, MenuItemDto>();
@@ -74,5 +81,36 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Price, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+    }
+
+    // Helper methods to split phone and country code
+    private static string ExtractPhone(string fullPhone)
+    {
+        if (string.IsNullOrWhiteSpace(fullPhone)) return string.Empty;
+        
+        // If phone starts with +, extract the number part
+        if (fullPhone.StartsWith("+"))
+        {
+            var digits = fullPhone.Substring(1);
+            // Assume last 10 digits are the phone number
+            return digits.Length >= 10 ? digits.Substring(digits.Length - 10) : digits;
+        }
+        
+        return fullPhone;
+    }
+
+    private static string ExtractCountryCode(string fullPhone)
+    {
+        if (string.IsNullOrWhiteSpace(fullPhone)) return string.Empty;
+        
+        // If phone starts with +, extract country code
+        if (fullPhone.StartsWith("+"))
+        {
+            var digits = fullPhone.Substring(1);
+            // Country code is everything except the last 10 digits
+            return digits.Length > 10 ? digits.Substring(0, digits.Length - 10) : string.Empty;
+        }
+        
+        return string.Empty;
     }
 }

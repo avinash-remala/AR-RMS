@@ -28,6 +28,36 @@ public class OrderRepository : Repository<Order>, IOrderRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime? fromDate, DateTime? toDate, string? buildingNumber = null, CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet
+            .Include(o => o.Items)
+            .Include(o => o.Extras)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (fromDate.HasValue)
+        {
+            var startDate = fromDate.Value.Date;
+            query = query.Where(o => o.OrderDate.Date >= startDate);
+        }
+
+        if (toDate.HasValue)
+        {
+            var endDate = toDate.Value.Date;
+            query = query.Where(o => o.OrderDate.Date <= endDate);
+        }
+
+        if (!string.IsNullOrWhiteSpace(buildingNumber))
+        {
+            query = query.Where(o => o.BuildingNumber == buildingNumber);
+        }
+
+        return await query
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Order?> GetOrderWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
