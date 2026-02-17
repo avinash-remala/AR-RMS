@@ -1,0 +1,544 @@
+/* ============================= */
+/* Shell Layout */
+/* ============================= */
+
+.av-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    height: 100vh;
+}
+
+/* ============================= */
+/* Sidebar */
+/* ============================= */
+
+.av-sidebar {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.av-brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.av-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+}
+
+.av-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.av-nav a {
+    text-decoration: none;
+    color: var(--sidebar-text);
+    opacity: 0.92;
+    padding: 10px 12px;
+    border-radius: 12px;
+    transition: all 0.15s ease;
+}
+
+.av-nav a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+}
+
+.av-nav a.active {
+    background: var(--sidebar-active);
+    color: #fff;
+    opacity: 1;
+}
+
+/* ============================= */
+/* Main Area */
+/* ============================= */
+
+.av-main {
+    display: grid;
+    grid-template-rows: var(--header-h) 1fr var(--footer-h);
+    min-width: 0;
+}
+
+.av-header,
+.av-footer {
+    background: var(--panel);
+    border-color: var(--border);
+    border-style: solid;
+    border-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-3);
+}
+
+.av-header {
+    border-bottom-width: 1px;
+    justify-content: space-between;
+}
+
+.av-footer {
+    border-top-width: 1px;
+    justify-content: space-between;
+    color: var(--muted);
+}
+
+.av-content {
+    padding: var(--space-3);
+    overflow: auto;
+}
+
+.av-container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+}
+
+/* ============================= */
+/* Cards + Grid */
+/* ============================= */
+
+/* ============================= */
+/* Summary Cards (Orders + Revenue) */
+/* ============================= */
+
+.av-summary-card {
+    background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.9),
+            rgba(242, 193, 78, 0.08)
+    );
+    border: 1px solid rgba(242, 193, 78, 0.35);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.av-summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(242, 193, 78, 0.15);
+}
+
+.av-summary-label {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.av-summary-value {
+    font-size: 36px;
+    font-weight: 900;
+    margin-top: 6px;
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.av-grid {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.av-grid.cards {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .av-grid.cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .av-grid.cards {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* ============================= */
+/* Tables */
+/* ============================= */
+
+.av-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.av-table th,
+.av-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: left;
+}
+
+.av-table thead th {
+    background: var(--panel-soft);
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+/* Smaller select inside tables (status dropdown) */
+.av-table .av-select {
+    padding: 8px 10px;
+    border-radius: 12px;
+}
+
+/* ============================= */
+/* Buttons */
+/* ============================= */
+
+.av-btn {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.av-btn:hover {
+    background: var(--panel-soft);
+}
+
+/* Primary (Gold Add Button) */
+.av-btn-primary {
+    background: var(--primary);
+    color: #111;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.av-btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.av-btn-primary:active {
+    transform: translateY(0);
+}
+
+.av-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== Action Buttons ===== */
+
+/* Edit */
+.av-btn-edit {
+    border: 1px solid rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+}
+
+.av-btn-edit:hover {
+    background: rgba(37, 99, 235, 0.16);
+}
+
+/* Disable / Enable + Update Status */
+.av-btn-warning {
+    border: 1px solid rgba(217, 119, 6, 0.35);
+    background: rgba(217, 119, 6, 0.10);
+    color: #b45309;
+}
+
+.av-btn-warning:hover {
+    background: rgba(217, 119, 6, 0.18);
+}
+
+/* Delete */
+.av-btn-danger {
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(220, 38, 38, 0.10);
+    color: #b91c1c;
+}
+
+.av-btn-danger:hover {
+    background: rgba(220, 38, 38, 0.18);
+}
+
+/* ============================= */
+/* Dropdown (Update Status) */
+/* ============================= */
+
+.av-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.av-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    min-width: 200px;
+    padding: 6px;
+    display: none;
+    z-index: 50;
+}
+
+.av-dropdown-menu { display: none; }
+.av-dropdown-menu.is-open { display: block; }
+
+.av-dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    background: transparent;
+    border: none;
+    color: var(--text);
+}
+
+.av-dropdown-item:hover {
+    background: var(--panel-soft);
+}
+
+/* ============================= */
+/* Badges */
+/* ============================= */
+
+.av-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    font-weight: 800;
+    border: 1px solid var(--border-soft);
+}
+
+/* ============================= */
+/* Order Row Status Highlight */
+/* ============================= */
+
+.av-row-placed {
+    background: transparent;
+}
+
+.av-row-preparing {
+    background: rgba(217, 119, 6, 0.06);
+}
+
+.av-row-ready {
+    background: rgba(37, 99, 235, 0.06);
+}
+
+.av-row-delivered {
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.av-row-cancelled {
+    background: rgba(220, 38, 38, 0.06);
+}
+
+/* Slight hover improvement */
+.av-table tbody tr:hover {
+    background: var(--panel-soft);
+    transition: background 0.15s ease;
+}
+
+
+/* Meal Type */
+.av-badge-veg {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.av-badge-nonveg {
+    background: rgba(239, 68, 68, 0.10);
+    color: #991b1b;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.av-badge-special {
+    background: rgba(242, 193, 78, 0.18);
+    color: #b45309;
+    border-color: rgba(242, 193, 78, 0.35);
+}
+
+/* Status */
+.av-badge-muted {
+    background: rgba(148, 163, 184, 0.15);
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.av-badge-warn {
+    background: rgba(217, 119, 6, 0.12);
+    color: #b45309;
+    border-color: rgba(217, 119, 6, 0.35);
+}
+
+.av-badge-ready {
+    background: rgba(37, 99, 235, 0.10);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.30);
+}
+
+.av-badge-ok {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+    border-color: rgba(34, 197, 94, 0.30);
+}
+
+.av-badge-danger {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+    border-color: rgba(220, 38, 38, 0.30);
+}
+
+/* ============================= */
+/* Forms */
+/* ============================= */
+
+.av-field {
+    display: grid;
+    gap: 6px;
+}
+
+.av-label {
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+.av-input,
+.av-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.av-input:focus,
+.av-select:focus {
+    border-color: rgba(242, 193, 78, 0.75);
+    box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.18);
+}
+
+/* Form Grid */
+.av-formGrid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+}
+
+.av-col-12 { grid-column: span 12; }
+.av-col-6  { grid-column: span 6; }
+.av-col-4  { grid-column: span 4; }
+.av-col-3  { grid-column: span 3; }
+.av-col-2  { grid-column: span 2; }
+
+.av-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+}
+
+.av-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ============================= */
+/* Mobile */
+/* ============================= */
+
+@media (max-width: 860px) {
+    .av-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .av-sidebar {
+        display: none;
+    }
+
+    .av-col-6,
+    .av-col-4,
+    .av-col-3,
+    .av-col-2 {
+        grid-column: span 12;
+    }
+
+    .av-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .av-actions .av-btn-primary {
+        width: 100%;
+    }
+    /* Secondary (View Past Orders) */
+    .av-btn-outline-gold {
+        background: rgba(242, 193, 78, 0.12);
+        border: 1px solid rgba(242, 193, 78, 0.45);
+        color: #b45309;
+        font-weight: 700;
+        border-radius: 14px;
+        padding: 10px 18px;
+        transition: all 0.15s ease;
+    }
+
+    .av-btn-outline-gold:hover {
+        background: rgba(242, 193, 78, 0.22);
+        transform: translateY(-1px);
+    }
+
+    .av-btn-outline-gold:active {
+        transform: translateY(0);
+    }
+
+
+    /* Styled Select (Building dropdown) */
+    .av-select-header {
+        border-radius: 14px;
+        padding: 10px 14px;
+        border: 1px solid rgba(242, 193, 78, 0.4);
+        background: rgba(242, 193, 78, 0.08);
+        color: var(--text);
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .av-select-header:hover {
+        background: rgba(242, 193, 78, 0.16);
+    }
+
+    .av-select-header:focus {
+        border-color: rgba(242, 193, 78, 0.7);
+        box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.18);
+    }
+}

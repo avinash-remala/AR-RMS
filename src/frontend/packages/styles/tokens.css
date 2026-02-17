@@ -1,0 +1,110 @@
+:root {
+    /* ==========================================
+       BRAND COLORS (Website Gold Theme)
+    ========================================== */
+
+    /* Primary gold */
+    --primary: #F2C14E;
+    --primary-hover: #D4A62F;
+    --primary-soft: rgba(242, 193, 78, 0.18);
+
+    /* Accent (near black for contrast) */
+    --accent: #111827;
+
+    /* Background system */
+    --bg: #f9fafb;
+    --panel: #ffffff;
+    --panel-soft: #f3f4f6;
+
+    /* Typography */
+    --text: #111827;
+    --text-light: #374151;
+    --muted: rgba(17, 24, 39, 0.65);
+
+    /* Borders */
+    --border: #e5e7eb;
+    --border-soft: #eef0f4;
+
+    /* Sidebar */
+    --sidebar-bg: #0b1220;
+    --sidebar-text: rgba(255,255,255,0.92);
+    --sidebar-active: rgba(242, 193, 78, 0.18);
+
+    /* Status colors */
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --info: #2563eb;
+
+    /* ==========================================
+       SIZING & RADIUS
+    ========================================== */
+
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 20px;
+
+    /* ==========================================
+       SPACING (Fluid)
+    ========================================== */
+
+    --space-1: clamp(6px, 0.6vw, 10px);
+    --space-2: clamp(10px, 1vw, 14px);
+    --space-3: clamp(14px, 1.4vw, 18px);
+    --space-4: clamp(18px, 2vw, 26px);
+    --space-5: clamp(24px, 3vw, 36px);
+
+    /* ==========================================
+       TYPOGRAPHY (Fluid)
+    ========================================== */
+
+    --text-xs: clamp(11px, 0.8vw, 13px);
+    --text-sm: clamp(12px, 0.9vw, 14px);
+    --text-base: clamp(14px, 1vw, 16px);
+    --text-lg: clamp(16px, 1.2vw, 20px);
+    --text-xl: clamp(20px, 2vw, 28px);
+    --text-2xl: clamp(24px, 3vw, 36px);
+
+    /* ==========================================
+       LAYOUT
+    ========================================== */
+
+    --sidebar-w: clamp(230px, 18vw, 280px);
+    --header-h: 64px;
+    --footer-h: 44px;
+
+    --container-max: 1200px;
+
+    /* Shadow system */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.10);
+    --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.14);
+}
+
+
+/* ==========================================
+   DARK MODE (Premium Look)
+========================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-soft: #1f2937;
+
+        --text: #f9fafb;
+        --text-light: #d1d5db;
+        --muted: rgba(255, 255, 255, 0.65);
+
+        --border: rgba(255, 255, 255, 0.12);
+        --border-soft: rgba(255, 255, 255, 0.06);
+
+        --sidebar-bg: #0b1220;
+        --sidebar-text: rgba(255,255,255,0.92);
+        --sidebar-active: rgba(242, 193, 78, 0.25);
+
+        --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+        --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+        --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.45);
+    }
+}
