@@ -35,6 +35,7 @@ public class MigrationController : ControllerBase
             await _context.Set<OrderExtra>().ExecuteDeleteAsync();
             await _context.Set<OrderItem>().ExecuteDeleteAsync();
             await _context.Orders.ExecuteDeleteAsync();
+            await _context.MenuItems.ExecuteDeleteAsync();
 
             var filePath = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", "Data", "att orders.csv"));
             if (!System.IO.File.Exists(filePath))
@@ -398,19 +399,23 @@ public class MigrationController : ControllerBase
     {
         var lowerName = itemName.ToLower();
         
-        // Check for special box (usually served on Fridays)
-        if (lowerName.Contains("special"))
+        // Check for desserts
+        if (lowerName.Contains("dessert") || lowerName.Contains("sweet") || lowerName.Contains("ice cream"))
         {
-            if (lowerName.Contains("non") || lowerName.Contains("nonveg"))
-                return "NON_VEG_SPECIAL";
-            return "VEG_SPECIAL";
+            return "Dessert";
         }
         
-        // Regular comfort boxes
-        if (lowerName.Contains("non") || lowerName.Contains("nonveg"))
-            return "NON_VEG";
+        // Check for appetizers
+        if (lowerName.Contains("appetizer") || lowerName.Contains("starter"))
+        {
+            return "Appetizer";
+        }
         
-        return "VEG";
+        // Regular lunch items
+        if (lowerName.Contains("non") || lowerName.Contains("nonveg") || lowerName.Contains("chicken") || lowerName.Contains("mutton"))
+            return "NonVeg";
+        
+        return "Veg";
     }
 
     private decimal GetItemPrice(string itemName)

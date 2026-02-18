@@ -49,7 +49,12 @@ public class MappingProfile : Profile
 
         // Order mappings
         CreateMap<Order, OrderDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.DaySerialNumber, opt => opt.Ignore())
+            .ForMember(dest => dest.CustomerFullName, opt => opt.Ignore())
+            .ForMember(dest => dest.CustomerPhone, opt => opt.Ignore())
+            .ForMember(dest => dest.MealType, opt => opt.Ignore())
+            .ForMember(dest => dest.RiceType, opt => opt.Ignore());
         
         CreateMap<OrderItem, OrderItemDto>()
             .ForMember(dest => dest.MenuItemName, opt => opt.Ignore());

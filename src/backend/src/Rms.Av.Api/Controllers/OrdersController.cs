@@ -27,16 +27,16 @@ public class OrdersController : ControllerBase
     {
         var query = new GetOrdersByDateRangeQuery(from, to, building);
         var orders = await _mediator.Send(query);
-        return Ok(new { orders });
+        return Ok(orders);
     }
 
     [HttpGet("today")]
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetTodayOrders([FromQuery] string? building = null)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
         var query = new GetOrdersByDateRangeQuery(today, today, building);
         var orders = await _mediator.Send(query);
-        return Ok(new { orders });
+        return Ok(orders);
     }
 
     [HttpGet("{id}")]
