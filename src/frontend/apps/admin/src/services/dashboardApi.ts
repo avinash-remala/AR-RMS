@@ -25,5 +25,5 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     // Backend should implement this (you already had it in swagger):
     // GET /api/v1/admin/dashboard/metrics
-    return http<DashboardMetrics>("/api/v1/admin/dashboard/metrics");
+    return http<DashboardMetrics>("/v1/admin/dashboard/metrics");
 }

@@ -1,60 +1,81 @@
-export type MealType = "VEG" | "NON_VEG" | "SPECIAL";
+export type MealType = "Veg" | "NonVeg" | "Dessert" | "Appetizer";
 
 export type MenuItem = {
     id: string;
     name: string;
-    mealType: MealType;
+    description: string;
+    category: MealType;
     price: number;
-    active: boolean;
+    isAvailable: boolean;
+    imageUrl?: string;
     createdAt: string;
 };
 
-let DB: MenuItem[] = [
-    {
-        id: "m_1001",
-        name: "Veg Lunch Box",
-        mealType: "VEG",
-        price: 12.99,
-        active: true,
-        createdAt: new Date().toISOString()
-    },
-    {
-        id: "m_1002",
-        name: "Non-Veg Lunch Box",
-        mealType: "NON_VEG",
-        price: 14.99,
-        active: true,
-        createdAt: new Date().toISOString()
-    }
-];
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+async function http<T>(path: string, opts?: RequestInit): Promise<T> {
+    const res = await fetch(`${BASE_URL}${path}`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(opts?.headers || {}),
+        },
+        ...opts,
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Request failed: ${res.status}`);
+    }
+
+    // Handle 204 No Content
+    if (res.status === 204) {
+        return {} as T;
+    }
+
+    return res.json() as Promise<T>;
+}
 
 export async function listMenuItems(): Promise<MenuItem[]> {
-    await sleep(150);
-    return [...DB].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    return http<MenuItem[]>("/v1/menu-items");
 }
 
-export async function createMenuItem(input: Omit<MenuItem, "id" | "createdAt">): Promise<MenuItem> {
-    await sleep(150);
-    const item: MenuItem = {
-        ...input,
-        id: `m_${Math.floor(1000 + Math.random() * 9000)}`,
-        createdAt: new Date().toISOString()
-    };
-    DB = [item, ...DB];
-    return item;
+export async function createMenuItem(input: {
+    name: string;
+    description: string;
+    category: MealType;
+    price: number;
+    isAvailable: boolean;
+    imageUrl?: string;
+}): Promise<MenuItem> {
+    return http<MenuItem>("/v1/menu-items", {
+        method: "POST",
+        body: JSON.stringify(input),
+    });
 }
 
-export async function updateMenuItem(id: string, patch: Partial<Omit<MenuItem, "id" | "createdAt">>): Promise<MenuItem> {
-    await sleep(150);
-    const idx = DB.findIndex((x) => x.id === id);
-    if (idx === -1) throw new Error("Menu item not found");
-    DB[idx] = { ...DB[idx], ...patch };
-    return DB[idx];
+export async function updateMenuItem(id: string, input: {
+    name: string;
+    description: string;
+    category: MealType;
+    price: number;
+    isAvailable: boolean;
+    imageUrl?: string;
+}): Promise<void> {
+    await http<void>(`/v1/menu-items/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ id, ...input }),
+    });
+}
+
+export async function toggleAvailability(id: string, isAvailable: boolean): Promise<void> {
+    await http<void>(`/v1/menu-items/${id}/availability`, {
+        method: "PATCH",
+        body: JSON.stringify(isAvailable),
+    });
 }
 
 export async function deleteMenuItem(id: string): Promise<void> {
-    await sleep(150);
-    DB = DB.filter((x) => x.id !== id);
+    await http<void>(`/v1/menu-items/${id}/hard`, {
+        method: "DELETE",
+    });
 }
