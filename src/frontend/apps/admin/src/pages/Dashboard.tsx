@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDashboardMetrics } from "../services/dashboardApi";
 
@@ -9,8 +9,40 @@ function money(n: number) {
     }).format(n || 0);
 }
 
+/** Smooth count-up animation (works for ints + currency) */
+function useCountUp(target: number, durationMs = 650) {
+    const [display, setDisplay] = useState(target);
+    const fromRef = useRef(target);
+
+    useEffect(() => {
+        const from = fromRef.current;
+        const to = target;
+        fromRef.current = target;
+
+        const start = performance.now();
+        let raf = 0;
+
+        const step = (now: number) => {
+            const t = Math.min(1, (now - start) / durationMs);
+            // easeOutCubic
+            const eased = 1 - Math.pow(1 - t, 3);
+
+            const val = from + (to - from) * eased;
+            setDisplay(val);
+
+            if (t < 1) raf = requestAnimationFrame(step);
+        };
+
+        raf = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(raf);
+    }, [target, durationMs]);
+
+    return display;
+}
+
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
+
     const [metrics, setMetrics] = useState({
         ordersToday: 0,
         revenueToday: 0,
@@ -18,11 +50,39 @@ export default function Dashboard() {
         employeesDue: 0,
     });
 
+    // pulse keys (increment to re-trigger CSS animation)
+    const [pulseKey, setPulseKey] = useState({
+        orders: 0,
+        revenue: 0,
+        invoices: 0,
+        employees: 0,
+    });
+
+    const prevRef = useRef(metrics);
+
+    // animated display values
+    const ordersAnim = useCountUp(metrics.ordersToday, 650);
+    const revenueAnim = useCountUp(metrics.revenueToday, 750);
+    const invoicesAnim = useCountUp(metrics.pendingInvoices, 650);
+    const employeesAnim = useCountUp(metrics.employeesDue, 750);
+
     async function load() {
         setLoading(true);
         try {
             const data = await getDashboardMetrics();
+
+            const prev = prevRef.current;
+
+            // update pulse keys only when value changes
+            setPulseKey((k) => ({
+                orders: k.orders + (data.ordersToday !== prev.ordersToday ? 1 : 0),
+                revenue: k.revenue + (data.revenueToday !== prev.revenueToday ? 1 : 0),
+                invoices: k.invoices + (data.pendingInvoices !== prev.pendingInvoices ? 1 : 0),
+                employees: k.employees + (data.employeesDue !== prev.employeesDue ? 1 : 0),
+            }));
+
             setMetrics(data);
+            prevRef.current = data;
         } catch {
             // keep placeholders
         } finally {
@@ -59,32 +119,44 @@ export default function Dashboard() {
             <div className="av-grid cards">
                 <div className="av-card av-metric av-metric-primary">
                     <div className="av-metric-label">Orders Today</div>
-                    <div className="av-metric-value">
-                        {loading ? "—" : metrics.ordersToday}
+                    <div
+                        key={pulseKey.orders}
+                        className={`av-metric-value ${loading ? "" : "av-pulse"}`}
+                    >
+                        {loading ? "—" : Math.round(ordersAnim)}
                     </div>
                     <div className="av-metric-sub">Total orders placed today</div>
                 </div>
 
                 <div className="av-card av-metric av-metric-accent">
                     <div className="av-metric-label">Revenue Today</div>
-                    <div className="av-metric-value">
-                        {loading ? "—" : money(metrics.revenueToday)}
+                    <div
+                        key={pulseKey.revenue}
+                        className={`av-metric-value ${loading ? "" : "av-pulse"}`}
+                    >
+                        {loading ? "—" : money(revenueAnim)}
                     </div>
                     <div className="av-metric-sub">Total revenue for today</div>
                 </div>
 
                 <div className="av-card av-metric av-metric-warn">
                     <div className="av-metric-label">Pending Invoices</div>
-                    <div className="av-metric-value">
-                        {loading ? "—" : metrics.pendingInvoices}
+                    <div
+                        key={pulseKey.invoices}
+                        className={`av-metric-value ${loading ? "" : "av-pulse"}`}
+                    >
+                        {loading ? "—" : Math.round(invoicesAnim)}
                     </div>
                     <div className="av-metric-sub">Vendor invoices awaiting approval</div>
                 </div>
 
                 <div className="av-card av-metric av-metric-ok">
                     <div className="av-metric-label">Employees Due</div>
-                    <div className="av-metric-value">
-                        {loading ? "—" : money(metrics.employeesDue)}
+                    <div
+                        key={pulseKey.employees}
+                        className={`av-metric-value ${loading ? "" : "av-pulse"}`}
+                    >
+                        {loading ? "—" : money(employeesAnim)}
                     </div>
                     <div className="av-metric-sub">Amount due to employees</div>
                 </div>

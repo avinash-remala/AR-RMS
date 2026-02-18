@@ -498,6 +498,103 @@
 /*}*/
 
 /* ============================= */
+/* Dashboard - Subtle Glow Edges */
+/* ============================= */
+
+.av-metric {
+    position: relative;
+    border-radius: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Base subtle glow */
+.av-metric-primary {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(242,193,78,0.22),
+            0 10px 24px rgba(242,193,78,0.08);
+}
+
+.av-metric-accent {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(234,88,12,0.20),
+            0 10px 24px rgba(234,88,12,0.08);
+}
+
+.av-metric-warn {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(217,119,6,0.18),
+            0 10px 24px rgba(217,119,6,0.08);
+}
+
+.av-metric-ok {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(34,197,94,0.18),
+            0 10px 24px rgba(34,197,94,0.08);
+}
+
+/* Hover lift (premium but subtle) */
+.av-metric:hover {
+    transform: translateY(-2px);
+}
+
+/* ============================= */
+/* Dashboard - Colored Numbers */
+/* ============================= */
+
+.av-metric-value {
+    font-size: 34px;
+    font-weight: 900;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+    display: inline-block; /* needed for pulse */
+}
+
+/* Gold gradient for Orders */
+.av-metric-primary .av-metric-value {
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Orange gradient for Revenue */
+.av-metric-accent .av-metric-value {
+    background: linear-gradient(90deg, #ea580c, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* (optional) warn + ok numbers if you want them colored too */
+.av-metric-warn .av-metric-value {
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.av-metric-ok .av-metric-value {
+    background: linear-gradient(90deg, #166534, #22c55e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ============================= */
+/* Soft Pulse when values update */
+/* ============================= */
+
+@keyframes avPulse {
+    0%   { transform: scale(1); filter: brightness(1); }
+    35%  { transform: scale(1.06); filter: brightness(1.12); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.av-pulse {
+    animation: avPulse 420ms ease;
+}
+
+/* ============================= */
 /* Metric Numbers (Colored) */
 /* ============================= */
 
