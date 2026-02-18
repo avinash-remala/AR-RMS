@@ -189,13 +189,16 @@ export default function Orders() {
 
             {/* Summary */}
             <div className="av-grid cards">
-                <div className="av-summary-card">
-                    <div className="av-summary-label">Orders</div>
-                    <div className="av-summary-value">{totalOrders}</div>
+                <div className="av-card av-metric av-metric-primary">
+                    <div className="av-metric-label">Orders</div>
+                    <div className="av-metric-value">{totalOrders}</div>
+                    <div className="av-metric-sub">{showPast ? "Orders in range" : "Orders placed today"}</div>
                 </div>
-                <div className="av-summary-card">
-                    <div className="av-summary-label">Revenue</div>
-                    <div className="av-summary-value">{money(revenue)}</div>
+
+                <div className="av-card av-metric av-metric-accent">
+                    <div className="av-metric-label">Revenue</div>
+                    <div className="av-metric-value">{money(revenue)}</div>
+                    <div className="av-metric-sub">{showPast ? "Revenue in range" : "Revenue for today"}</div>
                 </div>
             </div>
 
