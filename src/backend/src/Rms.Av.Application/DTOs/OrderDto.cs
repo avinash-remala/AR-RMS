@@ -4,9 +4,14 @@ public class OrderDto
 {
     public Guid Id { get; set; }
     public string OrderNumber { get; set; } = string.Empty;
+    public int DaySerialNumber { get; set; }
     public Guid CustomerId { get; set; }
+    public string CustomerFullName { get; set; } = string.Empty;
+    public string? CustomerPhone { get; set; }
     public string BuildingNumber { get; set; } = string.Empty;
     public string? Comments { get; set; }
+    public string MealType { get; set; } = string.Empty; // VEG, NON_VEG, SPECIAL
+    public string? RiceType { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public DateTime OrderDate { get; set; }

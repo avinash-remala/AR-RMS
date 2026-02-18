@@ -37,6 +37,12 @@ public class MenuItemsController : ControllerBase
     [HttpGet("by-category/{category}")]
     public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItemsByCategory(string category)
     {
+        var validCategories = new[] { "Veg", "NonVeg", "Dessert", "Appetizer" };
+        if (!validCategories.Contains(category, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new { message = "Invalid category. Valid values: Veg, NonVeg, Dessert, Appetizer" });
+        }
+
         var menuItems = await _context.MenuItems
             .Where(m => m.Category.ToLower() == category.ToLower() && m.IsAvailable)
             .OrderBy(m => m.Name)

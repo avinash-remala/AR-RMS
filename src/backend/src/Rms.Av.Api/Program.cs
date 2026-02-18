@@ -50,14 +50,20 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseExceptionHandler(_ => { }); // handled by GlobalExceptionHandler
-app.UseStatusCodePages();
-app.UseHttpsRedirection();
+// Routing must come first
+app.UseRouting();
 
+// CORS must come after routing but before other middleware
 app.UseCors("AllowReactApp");
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseExceptionHandler(_ => { }); // handled by GlobalExceptionHandler
+app.UseStatusCodePages();
+
+// Only use HTTPS redirection in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.MapControllers();
 
