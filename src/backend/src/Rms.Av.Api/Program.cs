@@ -50,21 +50,23 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Routing must come first
-app.UseRouting();
-
-// CORS must come after routing but before other middleware
-app.UseCors("AllowReactApp");
-
-app.UseExceptionHandler(_ => { }); // handled by GlobalExceptionHandler
-app.UseStatusCodePages();
-
 // Only use HTTPS redirection in production
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
+// CORS must come early in the pipeline
+app.UseCors("AllowReactApp");
+
+// Routing
+app.UseRouting();
+
+// Exception handling
+app.UseExceptionHandler(_ => { }); // handled by GlobalExceptionHandler
+app.UseStatusCodePages();
+
+// Map endpoints
 app.MapControllers();
 
 // Ensure database is created

@@ -1,15 +1,37 @@
 export type MealType = "VEG" | "NON_VEG" | "SPECIAL";
-export type OrderStatus = "PLACED" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
+export type OrderStatus = "Pending" | "Confirmed" | "Preparing" | "Ready" | "Delivered" | "Cancelled";
+
+export type OrderItemDto = {
+    menuItemId: string;
+    menuItemName: string;
+    quantity: number;
+    price: number;
+};
+
+export type OrderExtraDto = {
+    extraItemId: string;
+    extraItemName: string;
+    quantity: number;
+    price: number;
+};
 
 export type OrderRow = {
     id: string;
-    userName: string;
-    phone?: string;
-    building: "3400" | "2900";
+    orderNumber: string;
+    daySerialNumber: number;
+    customerId: string;
+    customerFullName: string;
+    customerPhone?: string;
+    buildingNumber: string;
+    comments?: string;
     mealType: MealType;
+    riceType?: string;
     status: OrderStatus;
-    total: number;
-    createdAt: string; // ISO string
+    totalAmount: number;
+    orderDate: string;
+    items: OrderItemDto[];
+    extras: OrderExtraDto[];
+    createdAt: string;
 };
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -33,8 +55,7 @@ async function http<T>(path: string, opts?: RequestInit): Promise<T> {
 
 export async function listTodayOrders(building: "ALL" | "3400" | "2900") {
     const qs = building !== "ALL" ? `?building=${building}` : "";
-    const data = await http<{ orders: OrderRow[] }>(`/v1/orders/today${qs}`);
-    return data.orders;
+    return http<OrderRow[]>(`/v1/orders/today${qs}`);
 }
 
 export async function listOrdersRange(params: {
@@ -43,10 +64,9 @@ export async function listOrdersRange(params: {
     building: "ALL" | "3400" | "2900";
 }) {
     const b = params.building !== "ALL" ? `&building=${params.building}` : "";
-    const data = await http<{ orders: OrderRow[] }>(
+    return http<OrderRow[]>(
         `/v1/orders?from=${encodeURIComponent(params.from)}&to=${encodeURIComponent(params.to)}${b}`
     );
-    return data.orders;
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {

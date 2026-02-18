@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { MealType, OrderRow, OrderStatus } from "../services/ordersApi";
 import { listOrdersRange, listTodayOrders, updateOrderStatus as patchOrderStatus } from "../services/ordersApi";
 
-const STATUS_OPTIONS: OrderStatus[] = ["PLACED", "PREPARING", "READY", "DELIVERED", "CANCELLED"];
+const STATUS_OPTIONS: OrderStatus[] = ["Pending", "Confirmed", "Preparing", "Ready", "Delivered", "Cancelled"];
 
 function money(n: number) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
@@ -22,11 +22,11 @@ function mealBadgeClass(m: MealType) {
 }
 
 function statusBadgeClass(s: OrderStatus) {
-    if (s === "DELIVERED") return "av-badge av-badge-ok";
-    if (s === "READY") return "av-badge av-badge-ready";
-    if (s === "PREPARING") return "av-badge av-badge-warn";
-    if (s === "CANCELLED") return "av-badge av-badge-danger";
-    return "av-badge av-badge-muted"; // PLACED
+    if (s === "Delivered") return "av-badge av-badge-ok";
+    if (s === "Ready") return "av-badge av-badge-ready";
+    if (s === "Preparing") return "av-badge av-badge-warn";
+    if (s === "Cancelled") return "av-badge av-badge-danger";
+    return "av-badge av-badge-muted"; // Pending/Confirmed
 }
 
 function rowClassForStatus(s: OrderStatus) {
@@ -118,7 +118,7 @@ export default function Orders() {
 
     const title = showPast ? "Past Orders" : "Today’s Orders";
     const totalOrders = orders.length;
-    const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+    const revenue = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
 
     // Make table area feel “full height” when few rows (no hardcoding rows)
     const minTableHeight = "clamp(280px, 45vh, 520px)";
@@ -208,10 +208,11 @@ export default function Orders() {
                     <table className="av-table">
                         <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>User</th>
+                            <th>#</th>
+                            <th>Customer</th>
                             <th>Building</th>
                             <th>Meal Type</th>
+                            <th>Rice</th>
                             <th>Status</th>
                             <th style={{ width: 320 }}>Actions</th>
                         </tr>
@@ -220,32 +221,38 @@ export default function Orders() {
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} style={{ color: "var(--muted)" }}>
+                                <td colSpan={7} style={{ color: "var(--muted)" }}>
                                     Loading...
                                 </td>
                             </tr>
                         ) : orders.length === 0 ? (
                             <tr>
-                                <td colSpan={6} style={{ color: "var(--muted)" }}>
+                                <td colSpan={7} style={{ color: "var(--muted)" }}>
                                     No orders found.
                                 </td>
                             </tr>
                         ) : (
                             orders.map((o) => (
                                 <tr key={o.id} className={rowClassForStatus(o.status)}>
-                                    <td>{o.id}</td>
+                                    <td>{o.daySerialNumber}</td>
 
                                     <td>
-                                        <div style={{ fontWeight: 800 }}>{o.userName}</div>
-                                        {o.phone ? (
-                                            <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{o.phone}</div>
+                                        <div style={{ fontWeight: 800 }}>{o.customerFullName}</div>
+                                        {o.customerPhone ? (
+                                            <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{o.customerPhone}</div>
                                         ) : null}
                                     </td>
 
-                                    <td>{o.building}</td>
+                                    <td>{o.buildingNumber}</td>
 
                                     <td>
                                         <span className={mealBadgeClass(o.mealType)}>{o.mealType}</span>
+                                    </td>
+
+                                    <td>
+                                        <div style={{ fontSize: "var(--text-sm)", color: "var(--muted)" }}>
+                                            {o.riceType || "-"}
+                                        </div>
                                     </td>
 
                                     <td>
