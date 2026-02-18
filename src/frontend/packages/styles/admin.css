@@ -109,42 +109,13 @@
 /* Cards + Grid */
 /* ============================= */
 
-/* ============================= */
-/* Summary Cards (Orders + Revenue) */
-/* ============================= */
-
-.av-summary-card {
-    background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.9),
-            rgba(242, 193, 78, 0.08)
-    );
-    border: 1px solid rgba(242, 193, 78, 0.35);
-    border-radius: 18px;
-    padding: 24px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-}
-
-.av-summary-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 28px rgba(242, 193, 78, 0.15);
-}
-
-.av-summary-label {
-    color: var(--muted);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.av-summary-value {
-    font-size: 36px;
-    font-weight: 900;
-    margin-top: 6px;
-    background: linear-gradient(90deg, #b45309, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.av-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-sm);
+    overflow: visible; /* important for dropdowns */
 }
 
 .av-grid {
@@ -152,6 +123,7 @@
     gap: var(--space-2);
 }
 
+/* Responsive grid: 1 col on mobile, up to 4 on large */
 .av-grid.cards {
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
@@ -190,10 +162,10 @@
     color: var(--muted);
 }
 
-/* Smaller select inside tables (status dropdown) */
-.av-table .av-select {
-    padding: 8px 10px;
-    border-radius: 12px;
+/* Slight hover improvement */
+.av-table tbody tr:hover {
+    background: var(--panel-soft);
+    transition: background 0.15s ease;
 }
 
 /* ============================= */
@@ -213,7 +185,7 @@
     background: var(--panel-soft);
 }
 
-/* Primary (Gold Add Button) */
+/* Primary (Gold) */
 .av-btn-primary {
     background: var(--primary);
     color: #111;
@@ -243,9 +215,31 @@
     box-shadow: none;
 }
 
-/* ===== Action Buttons ===== */
+/* Outline Gold (secondary) */
+.av-btn-outline-gold {
+    background: rgba(242, 193, 78, 0.12);
+    border: 1px solid rgba(242, 193, 78, 0.45);
+    color: #b45309;
+    font-weight: 800;
+    border-radius: 14px;
+    padding: 10px 18px;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
-/* Edit */
+.av-btn-outline-gold:hover {
+    background: rgba(242, 193, 78, 0.22);
+    transform: translateY(-1px);
+}
+
+.av-btn-outline-gold:active {
+    transform: translateY(0);
+}
+
+/* Action buttons */
 .av-btn-edit {
     border: 1px solid rgba(37, 99, 235, 0.35);
     background: rgba(37, 99, 235, 0.08);
@@ -256,7 +250,6 @@
     background: rgba(37, 99, 235, 0.16);
 }
 
-/* Disable / Enable + Update Status */
 .av-btn-warning {
     border: 1px solid rgba(217, 119, 6, 0.35);
     background: rgba(217, 119, 6, 0.10);
@@ -267,7 +260,6 @@
     background: rgba(217, 119, 6, 0.18);
 }
 
-/* Delete */
 .av-btn-danger {
     border: 1px solid rgba(220, 38, 38, 0.35);
     background: rgba(220, 38, 38, 0.10);
@@ -276,143 +268,6 @@
 
 .av-btn-danger:hover {
     background: rgba(220, 38, 38, 0.18);
-}
-
-/* ============================= */
-/* Dropdown (Update Status) */
-/* ============================= */
-
-.av-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.av-dropdown-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
-    min-width: 200px;
-    padding: 6px;
-    display: none;
-    z-index: 50;
-}
-
-.av-dropdown-menu { display: none; }
-.av-dropdown-menu.is-open { display: block; }
-
-.av-dropdown-item {
-    width: 100%;
-    text-align: left;
-    padding: 10px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: var(--text-sm);
-    background: transparent;
-    border: none;
-    color: var(--text);
-}
-
-.av-dropdown-item:hover {
-    background: var(--panel-soft);
-}
-
-/* ============================= */
-/* Badges */
-/* ============================= */
-
-.av-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: var(--text-sm);
-    font-weight: 800;
-    border: 1px solid var(--border-soft);
-}
-
-/* ============================= */
-/* Order Row Status Highlight */
-/* ============================= */
-
-.av-row-placed {
-    background: transparent;
-}
-
-.av-row-preparing {
-    background: rgba(217, 119, 6, 0.06);
-}
-
-.av-row-ready {
-    background: rgba(37, 99, 235, 0.06);
-}
-
-.av-row-delivered {
-    background: rgba(34, 197, 94, 0.06);
-}
-
-.av-row-cancelled {
-    background: rgba(220, 38, 38, 0.06);
-}
-
-/* Slight hover improvement */
-.av-table tbody tr:hover {
-    background: var(--panel-soft);
-    transition: background 0.15s ease;
-}
-
-
-/* Meal Type */
-.av-badge-veg {
-    background: rgba(34, 197, 94, 0.12);
-    color: #166534;
-    border-color: rgba(34, 197, 94, 0.25);
-}
-
-.av-badge-nonveg {
-    background: rgba(239, 68, 68, 0.10);
-    color: #991b1b;
-    border-color: rgba(239, 68, 68, 0.25);
-}
-
-.av-badge-special {
-    background: rgba(242, 193, 78, 0.18);
-    color: #b45309;
-    border-color: rgba(242, 193, 78, 0.35);
-}
-
-/* Status */
-.av-badge-muted {
-    background: rgba(148, 163, 184, 0.15);
-    color: #475569;
-    border-color: rgba(148, 163, 184, 0.35);
-}
-
-.av-badge-warn {
-    background: rgba(217, 119, 6, 0.12);
-    color: #b45309;
-    border-color: rgba(217, 119, 6, 0.35);
-}
-
-.av-badge-ready {
-    background: rgba(37, 99, 235, 0.10);
-    color: #1d4ed8;
-    border-color: rgba(37, 99, 235, 0.30);
-}
-
-.av-badge-ok {
-    background: rgba(34, 197, 94, 0.12);
-    color: #166534;
-    border-color: rgba(34, 197, 94, 0.30);
-}
-
-.av-badge-danger {
-    background: rgba(220, 38, 38, 0.12);
-    color: #b91c1c;
-    border-color: rgba(220, 38, 38, 0.30);
 }
 
 /* ============================= */
@@ -446,7 +301,27 @@
     box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.18);
 }
 
-/* Form Grid */
+/* Styled Select for header filters (optional) */
+.av-select-header {
+    border-radius: 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(242, 193, 78, 0.4);
+    background: rgba(242, 193, 78, 0.08);
+    color: var(--text);
+    font-weight: 700;
+    transition: all 0.15s ease;
+}
+
+.av-select-header:hover {
+    background: rgba(242, 193, 78, 0.16);
+}
+
+.av-select-header:focus {
+    border-color: rgba(242, 193, 78, 0.7);
+    box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.18);
+}
+
+/* Form grid */
 .av-formGrid {
     display: grid;
     gap: var(--space-2);
@@ -471,6 +346,333 @@
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+/* ============================= */
+/* Dropdown (Update Status) */
+/* ============================= */
+
+.av-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.av-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    min-width: 200px;
+    padding: 6px;
+    display: none;
+    z-index: 999; /* higher */
+}
+
+.av-dropdown-menu.is-open {
+    display: block;
+}
+
+.av-dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    background: transparent;
+    border: none;
+    color: var(--text);
+}
+
+.av-dropdown-item:hover {
+    background: var(--panel-soft);
+}
+
+/* ============================= */
+/* Badges */
+/* ============================= */
+
+.av-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    font-weight: 800;
+    border: 1px solid var(--border-soft);
+}
+
+/* Meal type badges */
+.av-badge-veg {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.av-badge-nonveg {
+    background: rgba(239, 68, 68, 0.10);
+    color: #991b1b;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.av-badge-special {
+    background: rgba(242, 193, 78, 0.18);
+    color: #b45309;
+    border-color: rgba(242, 193, 78, 0.35);
+}
+
+/* Status badges */
+.av-badge-muted {
+    background: rgba(148, 163, 184, 0.15);
+    color: #475569;
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.av-badge-warn {
+    background: rgba(217, 119, 6, 0.12);
+    color: #b45309;
+    border-color: rgba(217, 119, 6, 0.35);
+}
+
+.av-badge-ready {
+    background: rgba(37, 99, 235, 0.10);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.30);
+}
+
+.av-badge-ok {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+    border-color: rgba(34, 197, 94, 0.30);
+}
+
+.av-badge-danger {
+    background: rgba(220, 38, 38, 0.12);
+    color: #b91c1c;
+    border-color: rgba(220, 38, 38, 0.30);
+}
+
+/* ============================= */
+/* Order Row Status Highlight */
+/* ============================= */
+
+.av-row-placed {
+    background: transparent;
+}
+.av-row-preparing {
+    background: rgba(217, 119, 6, 0.06);
+}
+.av-row-ready {
+    background: rgba(37, 99, 235, 0.06);
+}
+.av-row-delivered {
+    background: rgba(34, 197, 94, 0.06);
+}
+.av-row-cancelled {
+    background: rgba(220, 38, 38, 0.06);
+}
+
+/* ============================= */
+/* Dashboard Metric Cards */
+/* ============================= */
+
+.av-metric {
+    position: relative;
+    padding: 18px;
+    overflow: hidden;
+}
+
+.av-metric-label {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 800;
+}
+
+/*.av-metric-value {*/
+/*    font-size: 28px;*/
+/*    font-weight: 900;*/
+/*    margin-top: 6px;*/
+/*}*/
+
+/* ============================= */
+/* Dashboard - Subtle Glow Edges */
+/* ============================= */
+
+.av-metric {
+    position: relative;
+    border-radius: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Base subtle glow */
+.av-metric-primary {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(242,193,78,0.22),
+            0 10px 24px rgba(242,193,78,0.08);
+}
+
+.av-metric-accent {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(234,88,12,0.20),
+            0 10px 24px rgba(234,88,12,0.08);
+}
+
+.av-metric-warn {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(217,119,6,0.18),
+            0 10px 24px rgba(217,119,6,0.08);
+}
+
+.av-metric-ok {
+    box-shadow:
+            0 1px 2px rgba(0,0,0,0.04),
+            0 0 0 1px rgba(34,197,94,0.18),
+            0 10px 24px rgba(34,197,94,0.08);
+}
+
+/* Hover lift (premium but subtle) */
+.av-metric:hover {
+    transform: translateY(-2px);
+}
+
+/* ============================= */
+/* Dashboard - Colored Numbers */
+/* ============================= */
+
+.av-metric-value {
+    font-size: 34px;
+    font-weight: 900;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+    display: inline-block; /* needed for pulse */
+}
+
+/* Gold gradient for Orders */
+.av-metric-primary .av-metric-value {
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Orange gradient for Revenue */
+.av-metric-accent .av-metric-value {
+    background: linear-gradient(90deg, #ea580c, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* (optional) warn + ok numbers if you want them colored too */
+.av-metric-warn .av-metric-value {
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.av-metric-ok .av-metric-value {
+    background: linear-gradient(90deg, #166534, #22c55e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ============================= */
+/* Soft Pulse when values update */
+/* ============================= */
+
+@keyframes avPulse {
+    0%   { transform: scale(1); filter: brightness(1); }
+    35%  { transform: scale(1.06); filter: brightness(1.12); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.av-pulse {
+    animation: avPulse 420ms ease;
+}
+
+/* ============================= */
+/* Metric Numbers (Colored) */
+/* ============================= */
+
+.av-metric-value {
+    font-size: 34px;
+    font-weight: 900;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* Orders Today */
+.av-metric-primary .av-metric-value {
+    background: linear-gradient(90deg, #b45309, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Revenue Today */
+.av-metric-accent .av-metric-value {
+    background: linear-gradient(90deg, #ea580c, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Optional subtle animation */
+.av-metric:hover .av-metric-value {
+    transform: scale(1.03);
+    transition: transform 0.2s ease;
+}
+
+
+.av-metric-sub {
+    margin-top: 6px;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+
+/* Colored accents */
+.av-metric-primary { border-left: 4px solid rgba(242,193,78,0.9); }
+.av-metric-accent  { border-left: 4px solid rgba(234,88,12,0.9); }
+.av-metric-warn    { border-left: 4px solid rgba(217,119,6,0.9); }
+.av-metric-ok      { border-left: 4px solid rgba(34,197,94,0.9); }
+
+/* ============================= */
+/* Dashboard Quick Actions */
+/* ============================= */
+
+.av-quick-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.av-quick-card {
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.15s ease;
+}
+
+.av-quick-card:hover {
+    background: var(--panel-soft);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.av-quick-title {
+    font-weight: 900;
+    color: var(--text);
+}
+
+.av-quick-sub {
+    margin-top: 6px;
+    font-size: var(--text-sm);
+    color: var(--muted);
 }
 
 /* ============================= */
@@ -500,45 +702,5 @@
 
     .av-actions .av-btn-primary {
         width: 100%;
-    }
-    /* Secondary (View Past Orders) */
-    .av-btn-outline-gold {
-        background: rgba(242, 193, 78, 0.12);
-        border: 1px solid rgba(242, 193, 78, 0.45);
-        color: #b45309;
-        font-weight: 700;
-        border-radius: 14px;
-        padding: 10px 18px;
-        transition: all 0.15s ease;
-    }
-
-    .av-btn-outline-gold:hover {
-        background: rgba(242, 193, 78, 0.22);
-        transform: translateY(-1px);
-    }
-
-    .av-btn-outline-gold:active {
-        transform: translateY(0);
-    }
-
-
-    /* Styled Select (Building dropdown) */
-    .av-select-header {
-        border-radius: 14px;
-        padding: 10px 14px;
-        border: 1px solid rgba(242, 193, 78, 0.4);
-        background: rgba(242, 193, 78, 0.08);
-        color: var(--text);
-        font-weight: 600;
-        transition: all 0.15s ease;
-    }
-
-    .av-select-header:hover {
-        background: rgba(242, 193, 78, 0.16);
-    }
-
-    .av-select-header:focus {
-        border-color: rgba(242, 193, 78, 0.7);
-        box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.18);
     }
 }
