@@ -4,36 +4,33 @@ export default function Sidebar() {
     return (
         <aside className="av-sidebar">
             <div className="av-brand">
-                <img
-                    src="/av-logo.png"
-                    alt="Amrutha Vilas"
-                    style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        objectFit: "contain"
-                    }}
-                />
-
+                <div className="av-logo">AV</div>
                 <div>
-                    <div style={{ fontWeight: 800 }}>Admin</div>
-                    <div style={{ fontSize: 12, opacity: 0.7 }}>
-                        Amrutha Vilas
-                    </div>
+                    <div style={{ fontWeight: 900 }}>Admin</div>
+                    <div style={{ opacity: 0.75, fontSize: 12 }}>Amrutha Vilas</div>
                 </div>
             </div>
 
             <nav className="av-nav">
-                <NavLink to="/" end>
+                <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
                     Dashboard
                 </NavLink>
 
-                <NavLink to="/orders">
+                <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
                     Orders
                 </NavLink>
 
-                <NavLink to="/menu-items">
+                <NavLink to="/menu-items" className={({ isActive }) => (isActive ? "active" : "")}>
                     Lunch Boxes
+                </NavLink>
+
+                {/* ✅ Add these */}
+                <NavLink to="/vendors" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Vendors
+                </NavLink>
+
+                <NavLink to="/employees" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Employees
                 </NavLink>
             </nav>
         </aside>

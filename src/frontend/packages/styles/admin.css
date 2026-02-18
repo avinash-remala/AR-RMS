@@ -703,4 +703,11 @@
     .av-actions .av-btn-primary {
         width: 100%;
     }
+    /* Selected row highlight */
+    .av-row-selected {
+        outline: 2px solid rgba(242,193,78,0.35);
+        outline-offset: -2px;
+        background: rgba(242,193,78,0.06);
+    }
+
 }
