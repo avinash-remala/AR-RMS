@@ -1,5 +1,9 @@
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Rms.Av.Infrastructure.Persistence;
+using Rms.Av.Application;
+using Rms.Av.Infrastructure;
+using Rms.Av.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,18 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<RmsAvDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") 
         ?? "Data Source=rmsav.db"));
+
+// Add Application Layer services (MediatR, AutoMapper, FluentValidation)
+builder.Services.AddApplication();
+
+// Add Infrastructure Layer services (Repositories, Unit of Work)
+builder.Services.AddInfrastructure();
+
+// Validation & error handling
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -34,6 +50,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler(_ => { }); // handled by GlobalExceptionHandler
+app.UseStatusCodePages();
 app.UseHttpsRedirection();
 
 app.UseCors("AllowReactApp");

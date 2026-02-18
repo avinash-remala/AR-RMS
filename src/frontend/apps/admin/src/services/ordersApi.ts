@@ -33,7 +33,7 @@ async function http<T>(path: string, opts?: RequestInit): Promise<T> {
 
 export async function listTodayOrders(building: "ALL" | "3400" | "2900") {
     const qs = building !== "ALL" ? `?building=${building}` : "";
-    const data = await http<{ orders: OrderRow[] }>(`/api/v1/orders/today${qs}`);
+    const data = await http<{ orders: OrderRow[] }>(`/v1/orders/today${qs}`);
     return data.orders;
 }
 
@@ -44,13 +44,13 @@ export async function listOrdersRange(params: {
 }) {
     const b = params.building !== "ALL" ? `&building=${params.building}` : "";
     const data = await http<{ orders: OrderRow[] }>(
-        `/api/v1/orders?from=${encodeURIComponent(params.from)}&to=${encodeURIComponent(params.to)}${b}`
+        `/v1/orders?from=${encodeURIComponent(params.from)}&to=${encodeURIComponent(params.to)}${b}`
     );
     return data.orders;
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {
-    return http<OrderRow>(`/api/v1/orders/${id}/status`, {
+    return http<OrderRow>(`/v1/orders/${id}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
     });
