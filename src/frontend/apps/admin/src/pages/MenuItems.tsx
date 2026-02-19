@@ -11,7 +11,7 @@ type FormState = {
 
 const emptyForm: FormState = {
     name: "",
-    mealType: "VEG",
+    mealType: "Veg",
     price: "",
     active: true,
 };

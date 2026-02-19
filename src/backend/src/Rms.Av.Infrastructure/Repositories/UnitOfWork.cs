@@ -17,6 +17,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Company> Companies { get; }
     public IRepository<Employee> Employees { get; }
     public IRepository<Vendor> Vendors { get; }
+    public IRepository<OtpUsage> OtpUsages { get; }
 
     public UnitOfWork(RmsAvDbContext context)
     {
@@ -29,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
         Companies = new Repository<Company>(context);
         Employees = new Repository<Employee>(context);
         Vendors = new Repository<Vendor>(context);
+        OtpUsages = new Repository<OtpUsage>(context);
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

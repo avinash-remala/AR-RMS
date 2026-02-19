@@ -763,6 +763,124 @@
       ]
     },
     {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phoneNumber}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/send-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "send-otp"
+              ]
+            },
+            "description": "Sends a 6-digit OTP code via SMS to the provided phone number. Phone must be in E.164 format (e.g., +12125551234). Rate limit: 1 OTP per 60 seconds per phone number. OTP expires after 5 minutes."
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phoneNumber}}\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify-otp"
+              ]
+            },
+            "description": "Verifies the OTP code sent to the phone number. Returns success if valid and not expired. OTP is single-use and will be invalidated after successful verification."
+          }
+        },
+        {
+          "name": "Get OTP Usage Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp-usage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "otp-usage"
+              ],
+              "query": [
+                {
+                  "key": "phoneNumber",
+                  "value": "",
+                  "description": "Optional: Filter by specific phone number",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin endpoint to view OTP usage statistics. Shows total requests, phone numbers, first and last request dates. Can filter by specific phone number using query parameter."
+          }
+        },
+        {
+          "name": "Get Top OTP Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/top-users?limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "top-users"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of top users to return (default: 10)"
+                }
+              ]
+            },
+            "description": "Returns phone numbers with the highest OTP request counts, ordered from highest to lowest. Use limit parameter to control how many results to return."
+          }
+        }
+      ]
+    },
+    {
       "name": "Migration",
       "item": [
         {
@@ -812,6 +930,11 @@
     {
       "key": "companyId",
       "value": "",
+      "type": "string"
+    },
+    {
+      "key": "phoneNumber",
+      "value": "+12125551234",
       "type": "string"
     }
   ]

@@ -12,6 +12,7 @@ public class RmsAvDbContext : DbContext
     // Auth
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+    public DbSet<OtpUsage> OtpUsages => Set<OtpUsage>();
     
     // Core Entities
     public DbSet<Employee> Employees => Set<Employee>();
@@ -50,6 +51,11 @@ public class RmsAvDbContext : DbContext
         // Configure unique index on Customer phone number
         modelBuilder.Entity<Customer>()
             .HasIndex(c => c.Phone)
+            .IsUnique();
+            
+        // Configure unique index on OtpUsage phone number
+        modelBuilder.Entity<OtpUsage>()
+            .HasIndex(o => o.PhoneNumber)
             .IsUnique();
             
         modelBuilder.Entity<VendorInvoice>()

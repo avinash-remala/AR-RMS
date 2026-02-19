@@ -11,6 +11,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Company> Companies { get; }
     IRepository<Employee> Employees { get; }
     IRepository<Vendor> Vendors { get; }
+    IRepository<OtpUsage> OtpUsages { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
