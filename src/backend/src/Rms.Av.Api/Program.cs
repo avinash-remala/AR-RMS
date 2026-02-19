@@ -69,11 +69,11 @@ app.UseStatusCodePages();
 // Map endpoints
 app.MapControllers();
 
-// Ensure database is created
+// Apply migrations automatically on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RmsAvDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 app.Run();
