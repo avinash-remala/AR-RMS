@@ -4,6 +4,10 @@ using Rms.Av.Infrastructure.Persistence;
 using Rms.Av.Application;
 using Rms.Av.Infrastructure;
 using Rms.Av.Api.Middleware;
+using QuestPDF.Infrastructure;
+
+// Configure QuestPDF license (Community license for non-commercial use)
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 

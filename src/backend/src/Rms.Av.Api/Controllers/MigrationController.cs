@@ -482,6 +482,67 @@ public class MigrationController : ControllerBase
             return StatusCode(500, new { message = "Error clearing data", error = ex.Message });
         }
     }
+
+    [HttpPost("seed-pricing")]
+    public async Task<IActionResult> SeedPricing()
+    {
+        try
+        {
+            // Check if pricing already exists
+            var existingCount = await _context.Pricings.CountAsync();
+            if (existingCount > 0)
+            {
+                return Ok(new { message = "Pricing data already exists", count = existingCount });
+            }
+
+            // Create initial pricing for 4 box types
+            var pricings = new List<Pricing>
+            {
+                new Pricing
+                {
+                    BoxType = "veg_comfort",
+                    DisplayName = "Veg Comfort Box",
+                    Price = 9.99m,
+                    IsActive = true,
+                    Description = "Vegetarian comfort meal box"
+                },
+                new Pricing
+                {
+                    BoxType = "nonveg_comfort",
+                    DisplayName = "Non-Veg Comfort Box",
+                    Price = 9.99m,
+                    IsActive = true,
+                    Description = "Non-vegetarian comfort meal box"
+                },
+                new Pricing
+                {
+                    BoxType = "veg_special",
+                    DisplayName = "Veg Special Box (Friday)",
+                    Price = 10.99m,
+                    IsActive = true,
+                    Description = "Special vegetarian meal box for Friday"
+                },
+                new Pricing
+                {
+                    BoxType = "nonveg_special",
+                    DisplayName = "Non-Veg Special Box (Friday)",
+                    Price = 10.99m,
+                    IsActive = true,
+                    Description = "Special non-vegetarian meal box for Friday"
+                }
+            };
+
+            _context.Pricings.AddRange(pricings);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Pricing data seeded successfully", count = pricings.Count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error seeding pricing data");
+            return StatusCode(500, new { message = "Error seeding pricing data", error = ex.Message });
+        }
+    }
 }
 
 public class HistoricalOrderCsv

@@ -32,6 +32,7 @@ bld/
 [Oo]ut/
 bin/
 obj/
+archived-website/
 msbuild.log
 msbuild.err
 msbuild.wrn

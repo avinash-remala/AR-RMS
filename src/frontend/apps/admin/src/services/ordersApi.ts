@@ -34,6 +34,9 @@ export type OrderRow = {
     createdAt: string;
 };
 
+// Alias for convenience
+export type Order = OrderRow;
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 async function http<T>(path: string, opts?: RequestInit): Promise<T> {
@@ -66,6 +69,13 @@ export async function listOrdersRange(params: {
     const b = params.building !== "ALL" ? `&building=${params.building}` : "";
     return http<OrderRow[]>(
         `/v1/orders?from=${encodeURIComponent(params.from)}&to=${encodeURIComponent(params.to)}${b}`
+    );
+}
+
+export async function getOrdersByDateRange(from: string, to: string, building?: string): Promise<Order[]> {
+    const b = building ? `&building=${building}` : "";
+    return http<Order[]>(
+        `/v1/orders?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${b}`
     );
 }
 

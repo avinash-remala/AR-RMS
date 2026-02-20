@@ -7,6 +7,8 @@ public interface IUnitOfWork : IDisposable
     IRepository<Customer> Customers { get; }
     IRepository<MenuItem> MenuItems { get; }
     IRepository<ExtraItem> ExtraItems { get; }
+    IRepository<Pricing> Pricings { get; }
+    IRepository<MealPass> MealPasses { get; }
     IOrderRepository Orders { get; }
     IRepository<Company> Companies { get; }
     IRepository<Employee> Employees { get; }

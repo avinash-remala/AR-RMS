@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import type { MealType, MenuItem } from "../services/menuApi";
+import type { MenuItem } from "../services/menuApi";
 import { createMenuItem, deleteMenuItem, listMenuItems, updateMenuItem } from "../services/menuApi";
 
 type FormState = {
     name: string;
-    mealType: MealType;
+    category: string;
     price: string; // keep string for inputs
-    active: boolean;
+    isAvailable: boolean;
 };
 
 const emptyForm: FormState = {
     name: "",
-    mealType: "Veg",
+    category: "Veg",
     price: "",
-    active: true,
+    isAvailable: true,
 };
 
 function money(n: number) {
@@ -50,9 +50,9 @@ export default function MenuItems() {
         if (!editingItem) return;
         setEditForm({
             name: editingItem.name,
-            mealType: editingItem.mealType,
+            category: editingItem.category,
             price: String(editingItem.price),
-            active: editingItem.active,
+            isAvailable: editingItem.isAvailable,
         });
     }, [editingItem]);
 
@@ -72,9 +72,9 @@ export default function MenuItems() {
         try {
             await createMenuItem({
                 name: form.name.trim(),
-                mealType: form.mealType,
+                category: form.category,
                 price: Number(form.price),
-                active: form.active,
+                isAvailable: form.isAvailable,
             });
             setForm(emptyForm);
             await refresh();
@@ -95,9 +95,9 @@ export default function MenuItems() {
         try {
             await updateMenuItem(editingId, {
                 name: editForm.name.trim(),
-                mealType: editForm.mealType,
+                category: editForm.category,
                 price: Number(editForm.price),
-                active: editForm.active,
+                isAvailable: editForm.isAvailable,
             });
             setEditingId(null);
             await refresh();
@@ -110,11 +110,22 @@ export default function MenuItems() {
 
     async function onToggleActive(item: MenuItem) {
         setError(null);
+        setSaving(true);
         try {
-            await updateMenuItem(item.id, { active: !item.active });
+            // Send all required fields with correct names for backend
+            await updateMenuItem(item.id, {
+                name: item.name,
+                description: item.description || "",
+                category: item.category,
+                price: item.price,
+                isAvailable: !item.isAvailable,
+                imageUrl: item.imageUrl
+            });
             await refresh();
         } catch (e: any) {
             setError(e?.message ?? "Failed to update active status");
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -138,9 +149,9 @@ export default function MenuItems() {
     return (
         <div className="av-grid" style={{ gap: "var(--space-3)" }}>
             <div>
-                <h2 style={{ margin: 0, fontSize: "var(--text-xl)" }}>Lunch Boxes</h2>
+                <h2 style={{ margin: 0, fontSize: "var(--text-xl)" }}>Custom Items</h2>
                 <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)", marginTop: 6 }}>
-                    Admin can add/update/delete lunch boxes and manage price + active status.
+                    Admin can add/update/delete custom items and manage price + active status.
                 </div>
             </div>
 
@@ -151,9 +162,9 @@ export default function MenuItems() {
                 </div>
             ) : null}
 
-            {/* Add Lunch Box */}
+            {/* Add Custom Item */}
             <div className="av-card">
-                <div style={{ fontWeight: 900, marginBottom: 12 }}>Add Lunch Box</div>
+                <div style={{ fontWeight: 900, marginBottom: 12 }}>Add Custom Item</div>
 
                 <div className="av-formGrid">
                     <div className="av-field av-col-6">
@@ -167,15 +178,16 @@ export default function MenuItems() {
                     </div>
 
                     <div className="av-field av-col-3">
-                        <label className="av-label">Meal Type</label>
+                        <label className="av-label">Category</label>
                         <select
                             className="av-select"
-                            value={form.mealType}
-                            onChange={(e) => setForm((s) => ({ ...s, mealType: e.target.value as MealType }))}
+                            value={form.category}
+                            onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
                         >
-                            <option value="VEG">VEG</option>
-                            <option value="NON_VEG">NON_VEG</option>
-                            <option value="SPECIAL">SPECIAL</option>
+                            <option value="Veg">Veg</option>
+                            <option value="NonVeg">NonVeg</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Appetizer">Appetizer</option>
                         </select>
                     </div>
 
@@ -193,10 +205,10 @@ export default function MenuItems() {
                     <div className="av-inline av-col-6">
                         <input
                             type="checkbox"
-                            checked={form.active}
-                            onChange={(e) => setForm((s) => ({ ...s, active: e.target.checked }))}
+                            checked={form.isAvailable}
+                            onChange={(e) => setForm((s) => ({ ...s, isAvailable: e.target.checked }))}
                         />
-                        <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Active</span>
+                        <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Available</span>
                     </div>
 
                     <div className="av-actions av-col-6">
@@ -207,9 +219,9 @@ export default function MenuItems() {
                 </div>
             </div>
 
-            {/* Current Lunch Boxes */}
+            {/* Current Custom Items */}
             <div className="av-card">
-                <div style={{ fontWeight: 900, marginBottom: 12 }}>Current Lunch Boxes</div>
+                <div style={{ fontWeight: 900, marginBottom: 12 }}>Current Custom Items</div>
 
                 {loading ? (
                     <div style={{ color: "var(--muted)" }}>Loading...</div>
@@ -219,9 +231,9 @@ export default function MenuItems() {
                             <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Type</th>
+                                <th>Category</th>
                                 <th>Price</th>
-                                <th>Active</th>
+                                <th>Available</th>
                                 <th style={{ width: 260 }}>Actions</th>
                             </tr>
                             </thead>
@@ -233,116 +245,113 @@ export default function MenuItems() {
                                     </td>
                                 </tr>
                             ) : (
-                                items.map((it) => (
-                                    <tr key={it.id}>
-                                        <td>
-                                            <div style={{ fontWeight: 800 }}>{it.name}</div>
-                                            <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{it.id}</div>
-                                        </td>
-                                        <td>{it.mealType}</td>
-                                        <td>{money(it.price)}</td>
-                                        <td>{it.active ? "Yes" : "No"}</td>
-                                        <td>
-                                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                                <button
-                                                    className="av-btn av-btn-edit"
-                                                    onClick={() => setEditingId(it.id)}
-                                                >
-                                                    Edit
-                                                </button>
+                                items.map((it) => {
+                                    const isEditing = editingId === it.id;
+                                    
+                                    if (isEditing) {
+                                        return (
+                                            <tr key={it.id} style={{ backgroundColor: "rgba(242,193,78,0.1)" }}>
+                                                <td>
+                                                    <input
+                                                        className="av-input"
+                                                        value={editForm.name}
+                                                        onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
+                                                        style={{ width: "100%" }}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <select
+                                                        className="av-select"
+                                                        value={editForm.category}
+                                                        onChange={(e) => setEditForm((s) => ({ ...s, category: e.target.value }))}
+                                                        style={{ width: "100%" }}
+                                                    >
+                                                        <option value="Veg">Veg</option>
+                                                        <option value="NonVeg">NonVeg</option>
+                                                        <option value="Dessert">Dessert</option>
+                                                        <option value="Appetizer">Appetizer</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        className="av-input"
+                                                        value={editForm.price}
+                                                        onChange={(e) => setEditForm((s) => ({ ...s, price: e.target.value }))}
+                                                        inputMode="decimal"
+                                                        style={{ width: "100%" }}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editForm.isAvailable}
+                                                        onChange={(e) => setEditForm((s) => ({ ...s, isAvailable: e.target.checked }))}
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                                        <button
+                                                            className="av-btn-primary"
+                                                            onClick={onSaveEdit}
+                                                            disabled={saving}
+                                                        >
+                                                            {saving ? "Saving..." : "Save"}
+                                                        </button>
+                                                        <button
+                                                            className="av-btn"
+                                                            onClick={() => setEditingId(null)}
+                                                            disabled={saving}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
+                                    
+                                    return (
+                                        <tr key={it.id}>
+                                            <td>
+                                                <div style={{ fontWeight: 800 }}>{it.name}</div>
+                                            </td>
+                                            <td>{it.category}</td>
+                                            <td>{money(it.price)}</td>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={it.isAvailable}
+                                                    onChange={() => onToggleActive(it)}
+                                                    disabled={saving}
+                                                    style={{ cursor: "pointer" }}
+                                                />
+                                            </td>
+                                            <td>
+                                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                                    <button
+                                                        className="av-btn av-btn-edit"
+                                                        onClick={() => setEditingId(it.id)}
+                                                    >
+                                                        Edit
+                                                    </button>
 
-                                                <button
-                                                    className="av-btn av-btn-warning"
-                                                    onClick={() => onToggleActive(it)}
-                                                >
-                                                    {it.active ? "Disable" : "Enable"}
-                                                </button>
-
-                                                <button
-                                                    className="av-btn av-btn-danger"
-                                                    onClick={() => onDelete(it)}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td>
-
-                                    </tr>
-                                ))
+                                                    <button
+                                                        className="av-btn av-btn-danger"
+                                                        onClick={() => onDelete(it)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                             </tbody>
                         </table>
                     </div>
                 )}
             </div>
-
-            {/* Edit Panel */}
-            {editingItem ? (
-                <div className="av-card" style={{ borderColor: "rgba(242,193,78,0.35)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                        <div>
-                            <div style={{ fontWeight: 900 }}>Edit Lunch Box</div>
-                            <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>{editingItem.id}</div>
-                        </div>
-
-                        <button className="av-btn" onClick={() => setEditingId(null)}>
-                            Close
-                        </button>
-                    </div>
-
-                    <div className="av-formGrid" style={{ marginTop: 12 }}>
-                        <div className="av-field av-col-6">
-                            <label className="av-label">Name</label>
-                            <input
-                                className="av-input"
-                                value={editForm.name}
-                                onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
-                            />
-                        </div>
-
-                        <div className="av-field av-col-3">
-                            <label className="av-label">Meal Type</label>
-                            <select
-                                className="av-select"
-                                value={editForm.mealType}
-                                onChange={(e) => setEditForm((s) => ({ ...s, mealType: e.target.value as MealType }))}
-                            >
-                                <option value="VEG">VEG</option>
-                                <option value="NON_VEG">NON_VEG</option>
-                                <option value="SPECIAL">SPECIAL</option>
-                            </select>
-                        </div>
-
-                        <div className="av-field av-col-3">
-                            <label className="av-label">Price</label>
-                            <input
-                                className="av-input"
-                                value={editForm.price}
-                                onChange={(e) => setEditForm((s) => ({ ...s, price: e.target.value }))}
-                                inputMode="decimal"
-                            />
-                        </div>
-
-                        <div className="av-inline av-col-6">
-                            <input
-                                type="checkbox"
-                                checked={editForm.active}
-                                onChange={(e) => setEditForm((s) => ({ ...s, active: e.target.checked }))}
-                            />
-                            <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Active</span>
-                        </div>
-
-                        <div className="av-actions av-col-6">
-                            <button className="av-btn-primary" onClick={onSaveEdit} disabled={saving}>
-                                {saving ? "Saving..." : "Save Changes"}
-                            </button>
-                            <button className="av-btn" onClick={() => setEditingId(null)}>
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
         </div>
     );
 }

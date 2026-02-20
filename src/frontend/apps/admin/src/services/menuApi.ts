@@ -4,7 +4,7 @@ export type MenuItem = {
     id: string;
     name: string;
     description: string;
-    category: MealType;
+    category: string;
     price: number;
     isAvailable: boolean;
     imageUrl?: string;
@@ -41,8 +41,8 @@ export async function listMenuItems(): Promise<MenuItem[]> {
 
 export async function createMenuItem(input: {
     name: string;
-    description: string;
-    category: MealType;
+    description?: string;
+    category: string;
     price: number;
     isAvailable: boolean;
     imageUrl?: string;
@@ -55,15 +55,23 @@ export async function createMenuItem(input: {
 
 export async function updateMenuItem(id: string, input: {
     name: string;
-    description: string;
-    category: MealType;
+    description?: string;
+    category: string;
     price: number;
     isAvailable: boolean;
     imageUrl?: string;
 }): Promise<void> {
     await http<void>(`/v1/menu-items/${id}`, {
         method: "PUT",
-        body: JSON.stringify({ id, ...input }),
+        body: JSON.stringify({ 
+            id, 
+            name: input.name,
+            description: input.description || "",
+            category: input.category,
+            price: input.price,
+            isAvailable: input.isAvailable,
+            imageUrl: input.imageUrl
+        }),
     });
 }
 

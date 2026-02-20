@@ -20,8 +20,24 @@ export default function Sidebar() {
                     Orders
                 </NavLink>
 
+                <NavLink to="/summary" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Summary
+                </NavLink>
+
                 <NavLink to="/menu-items" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Lunch Boxes
+                    Custom Items
+                </NavLink>
+
+                <NavLink to="/pricing" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Pricing
+                </NavLink>
+
+                <NavLink to="/meal-passes" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Meal Passes
+                </NavLink>
+
+                <NavLink to="/pdf-generator" className={({ isActive }) => (isActive ? "active" : "")}>
+                    PDF Generator
                 </NavLink>
 
                 {/* ✅ Add these */}

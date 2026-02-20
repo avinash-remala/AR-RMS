@@ -25,6 +25,12 @@ public class RmsAvDbContext : DbContext
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<ExtraItem> ExtraItems => Set<ExtraItem>();
     
+    // Pricing
+    public DbSet<Pricing> Pricings => Set<Pricing>();
+    
+    // Meal Passes
+    public DbSet<MealPass> MealPasses => Set<MealPass>();
+    
     // Payments
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<VendorInvoice> VendorInvoices => Set<VendorInvoice>();
@@ -56,6 +62,11 @@ public class RmsAvDbContext : DbContext
         // Configure unique index on OtpUsage phone number
         modelBuilder.Entity<OtpUsage>()
             .HasIndex(o => o.PhoneNumber)
+            .IsUnique();
+            
+        // Configure unique index on Pricing box type
+        modelBuilder.Entity<Pricing>()
+            .HasIndex(p => p.BoxType)
             .IsUnique();
             
         modelBuilder.Entity<VendorInvoice>()

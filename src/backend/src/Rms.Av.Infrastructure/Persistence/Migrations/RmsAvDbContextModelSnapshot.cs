@@ -280,6 +280,46 @@ namespace Rms.Av.Infrastructure.Persistence.Migrations
                     b.ToTable("ExtraItems");
                 });
 
+            modelBuilder.Entity("Rms.Av.Domain.Entities.MealPass", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MealsUsed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalMeals")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("MealPasses");
+                });
+
             modelBuilder.Entity("Rms.Av.Domain.Entities.MenuItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -500,6 +540,49 @@ namespace Rms.Av.Infrastructure.Persistence.Migrations
                     b.ToTable("OtpUsages");
                 });
 
+            modelBuilder.Entity("Rms.Av.Domain.Entities.Pricing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BoxType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoxType")
+                        .IsUnique();
+
+                    b.ToTable("Pricings");
+                });
+
             modelBuilder.Entity("Rms.Av.Domain.Entities.Vendor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -624,6 +707,17 @@ namespace Rms.Av.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("VendorPayments");
+                });
+
+            modelBuilder.Entity("Rms.Av.Domain.Entities.MealPass", b =>
+                {
+                    b.HasOne("Rms.Av.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("Rms.Av.Domain.Entities.OrderExtra", b =>

@@ -39,6 +39,30 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
+    /// <summary>
+    /// Get order summary with counts by type and address
+    /// </summary>
+    [HttpGet("summary")]
+    public async Task<ActionResult<OrderSummaryDto>> GetOrderSummary(
+        [FromQuery] DateTime? date = null,
+        [FromQuery] bool all = false)
+    {
+        try
+        {
+            // If 'all' parameter is true, get all orders (pass null to query)
+            // Otherwise, default to today's date if not provided
+            DateTime? filterDate = all ? null : (date ?? DateTime.Now.Date);
+            var query = new GetOrderSummaryQuery(filterDate);
+            var summary = await _mediator.Send(query);
+            return Ok(summary);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving order summary");
+            return StatusCode(500, new { message = "An error occurred while retrieving order summary" });
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<OrderDto>> GetOrder(Guid id)
     {

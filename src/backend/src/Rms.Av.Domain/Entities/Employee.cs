@@ -20,5 +20,6 @@ public enum EmployeeRole
     Admin = 3,
     Kitchen = 4,
     Packing = 5,
-    Delivery = 6
+    Delivery = 6,
+    Restricted = 7  // Limited to PDF Generator and Summary only
 }

@@ -13,6 +13,8 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Customer> Customers { get; }
     public IRepository<MenuItem> MenuItems { get; }
     public IRepository<ExtraItem> ExtraItems { get; }
+    public IRepository<Pricing> Pricings { get; }
+    public IRepository<MealPass> MealPasses { get; }
     public IOrderRepository Orders { get; }
     public IRepository<Company> Companies { get; }
     public IRepository<Employee> Employees { get; }
@@ -26,6 +28,8 @@ public class UnitOfWork : IUnitOfWork
         Customers = new Repository<Customer>(context);
         MenuItems = new Repository<MenuItem>(context);
         ExtraItems = new Repository<ExtraItem>(context);
+        Pricings = new Repository<Pricing>(context);
+        MealPasses = new Repository<MealPass>(context);
         Orders = new OrderRepository(context);
         Companies = new Repository<Company>(context);
         Employees = new Repository<Employee>(context);

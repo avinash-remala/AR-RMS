@@ -47,6 +47,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
 
+        // Pricing mappings
+        CreateMap<Pricing, PricingDto>();
+
+        // MealPass mappings
+        CreateMap<MealPass, MealPassDto>()
+            .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? $"{src.Customer.FirstName} {src.Customer.LastName}".Trim() : string.Empty))
+            .ForMember(dest => dest.CustomerPhone, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Phone : string.Empty))
+            .ForMember(dest => dest.MealsRemaining, opt => opt.MapFrom(src => src.MealsRemaining));
+
         // Order mappings
         CreateMap<Order, OrderDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))

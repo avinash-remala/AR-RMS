@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { getDashboardMetrics } from "../services/dashboardApi";
+import { getDashboardMetrics, getDashboardStatistics, type DashboardStatistics } from "../services/dashboardApi";
 
 function money(n: number) {
     return new Intl.NumberFormat("en-US", {
@@ -42,6 +42,7 @@ function useCountUp(target: number, durationMs = 650) {
 
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
+    const [statsLoading, setStatsLoading] = useState(true);
 
     const [metrics, setMetrics] = useState({
         ordersToday: 0,
@@ -49,6 +50,8 @@ export default function Dashboard() {
         pendingInvoices: 0,
         employeesDue: 0,
     });
+
+    const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
 
     // pulse keys (increment to re-trigger CSS animation)
     const [pulseKey, setPulseKey] = useState({
@@ -68,6 +71,7 @@ export default function Dashboard() {
 
     async function load() {
         setLoading(true);
+        setStatsLoading(true);
         try {
             const data = await getDashboardMetrics();
 
@@ -87,6 +91,16 @@ export default function Dashboard() {
             // keep placeholders
         } finally {
             setLoading(false);
+        }
+
+        // Load enhanced statistics
+        try {
+            const stats = await getDashboardStatistics();
+            setStatistics(stats);
+        } catch {
+            // keep null if error
+        } finally {
+            setStatsLoading(false);
         }
     }
 
@@ -173,7 +187,7 @@ export default function Dashboard() {
                     </Link>
 
                     <Link to="/menu-items" className="av-quick-card">
-                        <div className="av-quick-title">Lunch Boxes</div>
+                        <div className="av-quick-title">Custom Items</div>
                         <div className="av-quick-sub">Add / edit menu items & prices</div>
                     </Link>
 
@@ -188,6 +202,189 @@ export default function Dashboard() {
                     </Link>
                 </div>
             </div>
+
+            {/* Enhanced Statistics Section */}
+            {!statsLoading && statistics && (
+                <>
+                    {/* Order & Revenue Comparisons */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+                        <div className="av-card">
+                            <div style={{ fontWeight: 900, marginBottom: 12 }}>📦 Order Trends</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Today</span>
+                                    <span style={{ fontWeight: 600 }}>{statistics.orders.todayCount} orders ({statistics.orders.totalBoxesToday} boxes)</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Yesterday</span>
+                                    <span>{statistics.orders.yesterdayCount} orders</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>This Week</span>
+                                    <span>{statistics.orders.thisWeekCount} orders</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>This Month</span>
+                                    <span>{statistics.orders.thisMonthCount} orders</span>
+                                </div>
+                                {statistics.orders.percentageChangeFromYesterday !== 0 && (
+                                    <div style={{ 
+                                        marginTop: 8, 
+                                        padding: 8, 
+                                        backgroundColor: statistics.orders.percentageChangeFromYesterday > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", 
+                                        borderRadius: 4, 
+                                        textAlign: "center",
+                                        fontSize: "var(--text-sm)",
+                                        fontWeight: 600,
+                                        color: statistics.orders.percentageChangeFromYesterday > 0 ? "rgb(21,128,61)" : "rgb(185,28,28)"
+                                    }}>
+                                        {statistics.orders.percentageChangeFromYesterday > 0 ? "↑" : "↓"} {Math.abs(statistics.orders.percentageChangeFromYesterday)}% vs yesterday
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="av-card">
+                            <div style={{ fontWeight: 900, marginBottom: 12 }}>💰 Revenue Trends</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Today</span>
+                                    <span style={{ fontWeight: 600 }}>{money(statistics.revenue.today)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Yesterday</span>
+                                    <span>{money(statistics.revenue.yesterday)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>This Week</span>
+                                    <span>{money(statistics.revenue.thisWeek)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>This Month</span>
+                                    <span>{money(statistics.revenue.thisMonth)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                                    <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>All Time</span>
+                                    <span style={{ fontWeight: 700 }}>{money(statistics.revenue.allTime)}</span>
+                                </div>
+                                {statistics.revenue.percentageChangeFromYesterday !== 0 && (
+                                    <div style={{ 
+                                        marginTop: 8, 
+                                        padding: 8, 
+                                        backgroundColor: statistics.revenue.percentageChangeFromYesterday > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", 
+                                        borderRadius: 4, 
+                                        textAlign: "center",
+                                        fontSize: "var(--text-sm)",
+                                        fontWeight: 600,
+                                        color: statistics.revenue.percentageChangeFromYesterday > 0 ? "rgb(21,128,61)" : "rgb(185,28,28)"
+                                    }}>
+                                        {statistics.revenue.percentageChangeFromYesterday > 0 ? "↑" : "↓"} {Math.abs(statistics.revenue.percentageChangeFromYesterday)}% vs yesterday
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Top Selling Items */}
+                    {statistics.topSellingItems.length > 0 && (
+                        <div className="av-card">
+                            <div style={{ fontWeight: 900, marginBottom: 14 }}>🏆 Top Selling Items (This Month)</div>
+                            <div style={{ overflowX: "auto" }}>
+                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: "2px solid var(--border)" }}>
+                                            <th style={{ padding: "12px 8px", textAlign: "left", fontWeight: 700 }}>Item</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Quantity</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Orders</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {statistics.topSellingItems.map((item, idx) => (
+                                            <tr key={idx} style={{ borderBottom: "1px solid var(--border)" }}>
+                                                <td style={{ padding: "12px 8px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <span style={{ 
+                                                            backgroundColor: idx === 0 ? "gold" : idx === 1 ? "silver" : idx === 2 ? "#cd7f32" : "var(--border)",
+                                                            width: 24,
+                                                            height: 24,
+                                                            borderRadius: "50%",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            fontSize: "var(--text-xs)",
+                                                            fontWeight: 700
+                                                        }}>
+                                                            {idx + 1}
+                                                        </span>
+                                                        <span style={{ fontWeight: 600 }}>{item.menuItemName}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right", fontWeight: 600 }}>{item.totalQuantity}</td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right" }}>{item.orderCount}</td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right", fontWeight: 600 }}>{money(item.revenue)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Orders */}
+                    {statistics.recentOrders.length > 0 && (
+                        <div className="av-card">
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                                <div style={{ fontWeight: 900 }}>📋 Recent Orders</div>
+                                <Link to="/orders" className="av-btn" style={{ fontSize: "var(--text-sm)", padding: "6px 12px" }}>
+                                    View All
+                                </Link>
+                            </div>
+                            <div style={{ overflowX: "auto" }}>
+                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: "2px solid var(--border)" }}>
+                                            <th style={{ padding: "12px 8px", textAlign: "left", fontWeight: 700 }}>Order #</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "left", fontWeight: 700 }}>Customer</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "center", fontWeight: 700 }}>Status</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Items</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Amount</th>
+                                            <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 700 }}>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {statistics.recentOrders.map((order) => (
+                                            <tr key={order.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                                                <td style={{ padding: "12px 8px", fontWeight: 600 }}>{order.orderNumber}</td>
+                                                <td style={{ padding: "12px 8px" }}>{order.customerName}</td>
+                                                <td style={{ padding: "12px 8px", textAlign: "center" }}>
+                                                    <span style={{ 
+                                                        padding: "4px 8px", 
+                                                        borderRadius: 4, 
+                                                        fontSize: "var(--text-xs)",
+                                                        fontWeight: 600,
+                                                        backgroundColor: order.status === "Pending" ? "rgba(234,179,8,0.1)" : 
+                                                                       order.status === "Completed" ? "rgba(34,197,94,0.1)" : 
+                                                                       order.status === "Cancelled" ? "rgba(239,68,68,0.1)" : "var(--border)",
+                                                        color: order.status === "Pending" ? "rgb(161,98,7)" : 
+                                                               order.status === "Completed" ? "rgb(21,128,61)" : 
+                                                               order.status === "Cancelled" ? "rgb(185,28,28)" : "var(--text)"
+                                                    }}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right" }}>{order.itemCount}</td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right", fontWeight: 600 }}>{money(order.totalAmount)}</td>
+                                                <td style={{ padding: "12px 8px", textAlign: "right", color: "var(--muted)" }}>{order.timeAgo}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
         </div>
     );
 }

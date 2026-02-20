@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Rms.Av.Api.Authorization;
 using Rms.Av.Domain.Entities;
 using Rms.Av.Infrastructure.Persistence;
 
@@ -7,6 +8,7 @@ namespace Rms.Av.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/menu-items")]
+[RequireRole(EmployeeRole.Admin, EmployeeRole.Manager)]  // Management only
 public class MenuItemsController : ControllerBase
 {
     private readonly RmsAvDbContext _context;
