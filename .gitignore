@@ -64,6 +64,10 @@ dist-ssr/
 .env.local
 .env.*.local
 
+# Local secrets (use environment variables instead)
+appsettings.Development.json
+appsettings.Local.json
+
 # Logs
 logs/
 *.log
