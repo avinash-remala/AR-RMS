@@ -1,0 +1,10 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/customer/Dockerfile"
+
+[build.args]
+VITE_API_BASE_URL = ""  # Set this in Railway dashboard → Service → Variables
+
+[deploy]
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

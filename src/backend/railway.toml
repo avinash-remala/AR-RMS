@@ -5,3 +5,14 @@ dockerfilePath = "Dockerfile"
 [deploy]
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+
+# Required environment variables — set these in Railway dashboard → Service → Variables:
+#
+#   AllowedOrigins        = https://your-admin.up.railway.app,https://your-customer.up.railway.app
+#   AWS__AccessKey        = <your AWS access key>
+#   AWS__SecretKey        = <your AWS secret key>
+#   AWS__Region           = us-east-1
+#
+# SQLite persistence — attach a Railway Volume and set:
+#   ConnectionStrings__DefaultConnection = Data Source=/data/rmsav.db
+# Then mount the volume at /data in the service settings.
