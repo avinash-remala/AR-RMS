@@ -63,6 +63,15 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [HttpGet("customer/{customerId}/last")]
+    public async Task<ActionResult<OrderDto>> GetLastOrderByCustomer(Guid customerId)
+    {
+        var query = new GetLastOrderByCustomerIdQuery(customerId);
+        var order = await _mediator.Send(query);
+        if (order == null) return NotFound();
+        return Ok(order);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<OrderDto>> GetOrder(Guid id)
     {

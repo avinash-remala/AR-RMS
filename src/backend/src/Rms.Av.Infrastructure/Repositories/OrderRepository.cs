@@ -65,4 +65,15 @@ public class OrderRepository : Repository<Order>, IOrderRepository
             .Include(o => o.Extras)
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
+
+    public async Task<Order?> GetLastOrderByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(o => o.Items)
+            .Include(o => o.Extras)
+            .AsNoTracking()
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.OrderDate)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
