@@ -25,4 +25,4 @@ RUN npm install -g serve
 COPY --from=build /app/apps/customer/dist /app/dist
 
 ENV PORT=3000
-CMD serve -s /app/dist -l $PORT
+CMD ["sh", "-c", "serve -s /app/dist --listen ${PORT} --no-clipboard"]
