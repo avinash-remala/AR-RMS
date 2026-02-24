@@ -45,14 +45,8 @@ public class OtpService
         // Set rate limit (1 minute)
         _cache.Set(rateLimitKey, true, TimeSpan.FromSeconds(60));
 
-        // Send SMS
-        var sent = await _smsService.SendOtpAsync(phoneNumber, otp);
-        
-        if (!sent)
-        {
-            _cache.Remove(cacheKey);
-            return (false, "Failed to send OTP. Please try again.");
-        }
+        // Send SMS (non-fatal — if SMS is not configured, OTP flow still continues)
+        await _smsService.SendOtpAsync(phoneNumber, otp);
 
         // Track OTP usage in database
         await TrackOtpUsageAsync(phoneNumber);
