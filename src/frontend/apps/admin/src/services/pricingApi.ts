@@ -62,3 +62,10 @@ export async function bulkUpdatePricing(pricings: UpdatePricingRequest[]): Promi
         body: JSON.stringify({ pricings }),
     });
 }
+
+export async function togglePricingActive(boxType: string, isActive: boolean): Promise<void> {
+    await http<void>(`/v1/pricing/${boxType}/active`, {
+        method: "PATCH",
+        body: JSON.stringify(isActive),
+    });
+}

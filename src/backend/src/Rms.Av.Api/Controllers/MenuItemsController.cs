@@ -176,15 +176,7 @@ public class MenuItemsController : ControllerBase
             return NotFound(new { message = "Menu item not found" });
         }
 
-        // Check if menu item is referenced in any orders
-        var hasOrders = await _context.Set<OrderItem>()
-            .AnyAsync(oi => oi.MenuItemId == id);
-
-        if (hasOrders)
-        {
-            return BadRequest(new { message = "Cannot delete menu item that is referenced in orders. Use soft delete instead." });
-        }
-
+        // Order items that reference this item will show "*Item Removed*" in order history
         _context.MenuItems.Remove(menuItem);
         await _context.SaveChangesAsync();
 

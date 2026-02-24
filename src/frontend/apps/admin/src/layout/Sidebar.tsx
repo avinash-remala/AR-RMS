@@ -24,12 +24,12 @@ export default function Sidebar() {
                     Summary
                 </NavLink>
 
-                <NavLink to="/menu-items" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Custom Items
+                <NavLink to="/lunch-boxes" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Lunch Boxes
                 </NavLink>
 
-                <NavLink to="/pricing" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Pricing
+                <NavLink to="/menu-items" className={({ isActive }) => (isActive ? "active" : "")}>
+                    Custom Items
                 </NavLink>
 
                 <NavLink to="/meal-passes" className={({ isActive }) => (isActive ? "active" : "")}>

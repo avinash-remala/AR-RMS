@@ -31,8 +31,9 @@ public class GetLastOrderByCustomerIdQueryHandler : IRequestHandler<GetLastOrder
 
         foreach (var item in dto.Items)
         {
-            if (menuMap.TryGetValue(item.MenuItemId, out var name))
-                item.MenuItemName = name;
+            item.MenuItemName = menuMap.TryGetValue(item.MenuItemId, out var name)
+                ? name
+                : "*Item Removed*";
         }
 
         return dto;

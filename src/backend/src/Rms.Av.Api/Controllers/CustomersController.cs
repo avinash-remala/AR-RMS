@@ -1,8 +1,10 @@
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Rms.Av.Application.DTOs;
 using Rms.Av.Application.Features.Customers.Commands;
 using Rms.Av.Application.Features.Customers.Queries;
+using Rms.Av.Application.Interfaces;
 
 namespace Rms.Av.Api.Controllers;
 
@@ -12,11 +14,15 @@ public class CustomersController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<CustomersController> _logger;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public CustomersController(IMediator mediator, ILogger<CustomersController> logger)
+    public CustomersController(IMediator mediator, ILogger<CustomersController> logger, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _mediator = mediator;
         _logger = logger;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -115,5 +121,26 @@ public class CustomersController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Get the active meal pass for a customer (public — used by customer app at order time)
+    /// </summary>
+    [HttpGet("{id}/meal-pass")]
+    public async Task<ActionResult<MealPassDto>> GetCustomerMealPass(Guid id)
+    {
+        var passes = await _unitOfWork.MealPasses.FindAsync(
+            mp => mp.CustomerId == id && mp.IsActive && (mp.TotalMeals - mp.MealsUsed) > 0,
+            CancellationToken.None);
+
+        var pass = passes.FirstOrDefault();
+        if (pass == null)
+            return Ok(null);
+
+        var customer = await _unitOfWork.Customers.GetByIdAsync(id, CancellationToken.None);
+        if (customer != null)
+            pass.Customer = customer;
+
+        return Ok(_mapper.Map<MealPassDto>(pass));
     }
 }

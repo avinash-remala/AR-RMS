@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import type { MenuItem } from "../services/menuApi";
-import { createMenuItem, deleteMenuItem, listMenuItems, updateMenuItem } from "../services/menuApi";
+import { createMenuItem, deleteMenuItem, listMenuItems, toggleAvailability, updateMenuItem } from "../services/menuApi";
+
+// Custom items have a non-empty category (Veg, NonVeg, Dessert, Appetizer).
+// Lunch box items (category === "") are managed under the Lunch Boxes page.
 
 type FormState = {
     name: string;
     category: string;
-    price: string; // keep string for inputs
+    price: string;
     isAvailable: boolean;
 };
 
-const emptyForm: FormState = {
-    name: "",
-    category: "Veg",
-    price: "",
-    isAvailable: true,
-};
+const emptyForm: FormState = { name: "", category: "Veg", price: "", isAvailable: true };
 
 function money(n: number) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
@@ -23,14 +21,15 @@ function money(n: number) {
 export default function MenuItems() {
     const [items, setItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [form, setForm] = useState<FormState>(emptyForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
     const [editingId, setEditingId] = useState<string | null>(null);
     const editingItem = useMemo(() => items.find((x) => x.id === editingId) ?? null, [items, editingId]);
     const [editForm, setEditForm] = useState<FormState>(emptyForm);
+
+    // Only show items with a non-empty category
+    const customItems = useMemo(() => items.filter((it) => it.category !== ""), [items]);
 
     async function refresh() {
         setLoading(true);
@@ -42,9 +41,7 @@ export default function MenuItems() {
         }
     }
 
-    useEffect(() => {
-        refresh();
-    }, []);
+    useEffect(() => { refresh(); }, []);
 
     useEffect(() => {
         if (!editingItem) return;
@@ -67,7 +64,6 @@ export default function MenuItems() {
         setError(null);
         const msg = validate(form);
         if (msg) return setError(msg);
-
         setSaving(true);
         try {
             await createMenuItem({
@@ -90,7 +86,6 @@ export default function MenuItems() {
         setError(null);
         const msg = validate(editForm);
         if (msg) return setError(msg);
-
         setSaving(true);
         try {
             await updateMenuItem(editingId, {
@@ -110,37 +105,36 @@ export default function MenuItems() {
 
     async function onToggleActive(item: MenuItem) {
         setError(null);
-        setSaving(true);
+        const newValue = !item.isAvailable;
+        setItems((prev) =>
+            prev.map((it) => (it.id === item.id ? { ...it, isAvailable: newValue } : it))
+        );
         try {
-            // Send all required fields with correct names for backend
-            await updateMenuItem(item.id, {
-                name: item.name,
-                description: item.description || "",
-                category: item.category,
-                price: item.price,
-                isAvailable: !item.isAvailable,
-                imageUrl: item.imageUrl
-            });
-            await refresh();
+            await toggleAvailability(item.id, newValue);
         } catch (e: any) {
-            setError(e?.message ?? "Failed to update active status");
-        } finally {
-            setSaving(false);
+            setItems((prev) =>
+                prev.map((it) => (it.id === item.id ? { ...it, isAvailable: item.isAvailable } : it))
+            );
+            setError(e?.message ?? "Failed to update availability");
         }
     }
 
     async function onDelete(item: MenuItem) {
-        const ok = window.confirm(`Delete "${item.name}"?`);
-        if (!ok) return;
-
+        const label = item.name.trim() || "this item";
+        if (!window.confirm(`Delete "${label}"? This cannot be undone.`)) return;
         setError(null);
         setSaving(true);
         try {
             await deleteMenuItem(item.id);
             if (editingId === item.id) setEditingId(null);
-            await refresh();
+            setItems((prev) => prev.filter((it) => it.id !== item.id));
         } catch (e: any) {
-            setError(e?.message ?? "Failed to delete item");
+            const msg: string = e?.message ?? "";
+            if (msg.toLowerCase().includes("referenced in orders")) {
+                setError(`"${label}" has order history and cannot be deleted. Mark it as unavailable instead.`);
+            } else {
+                setError(msg || "Failed to delete item");
+            }
         } finally {
             setSaving(false);
         }
@@ -151,21 +145,20 @@ export default function MenuItems() {
             <div>
                 <h2 style={{ margin: 0, fontSize: "var(--text-xl)" }}>Custom Items</h2>
                 <div style={{ color: "var(--muted)", fontSize: "var(--text-sm)", marginTop: 6 }}>
-                    Admin can add/update/delete custom items and manage price + active status.
+                    Extras and specials shown as add-ons in the customer app.
                 </div>
             </div>
 
-            {error ? (
+            {error && (
                 <div className="av-card" style={{ borderColor: "rgba(220,38,38,0.35)" }}>
                     <b style={{ display: "block", marginBottom: 6 }}>Error</b>
                     <div style={{ color: "var(--muted)" }}>{error}</div>
                 </div>
-            ) : null}
+            )}
 
             {/* Add Custom Item */}
             <div className="av-card">
                 <div style={{ fontWeight: 900, marginBottom: 12 }}>Add Custom Item</div>
-
                 <div className="av-formGrid">
                     <div className="av-field av-col-6">
                         <label className="av-label">Name</label>
@@ -173,10 +166,9 @@ export default function MenuItems() {
                             className="av-input"
                             value={form.name}
                             onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-                            placeholder="e.g., Veg Lunch Box"
+                            placeholder="e.g., Veg Fried Rice"
                         />
                     </div>
-
                     <div className="av-field av-col-3">
                         <label className="av-label">Category</label>
                         <select
@@ -190,7 +182,6 @@ export default function MenuItems() {
                             <option value="Appetizer">Appetizer</option>
                         </select>
                     </div>
-
                     <div className="av-field av-col-3">
                         <label className="av-label">Price</label>
                         <input
@@ -201,7 +192,6 @@ export default function MenuItems() {
                             inputMode="decimal"
                         />
                     </div>
-
                     <div className="av-inline av-col-6">
                         <input
                             type="checkbox"
@@ -210,7 +200,6 @@ export default function MenuItems() {
                         />
                         <span style={{ color: "var(--muted)", fontSize: "var(--text-sm)" }}>Available</span>
                     </div>
-
                     <div className="av-actions av-col-6">
                         <button className="av-btn-primary" onClick={onCreate} disabled={saving}>
                             {saving ? "Saving..." : "Add Item"}
@@ -219,10 +208,9 @@ export default function MenuItems() {
                 </div>
             </div>
 
-            {/* Current Custom Items */}
+            {/* Custom Items list */}
             <div className="av-card">
                 <div style={{ fontWeight: 900, marginBottom: 12 }}>Current Custom Items</div>
-
                 {loading ? (
                     <div style={{ color: "var(--muted)" }}>Loading...</div>
                 ) : (
@@ -234,20 +222,18 @@ export default function MenuItems() {
                                 <th>Category</th>
                                 <th>Price</th>
                                 <th>Available</th>
-                                <th style={{ width: 260 }}>Actions</th>
+                                <th style={{ width: 200 }}>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {items.length === 0 ? (
+                            {customItems.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} style={{ color: "var(--muted)" }}>
-                                        No items yet.
-                                    </td>
+                                    <td colSpan={5} style={{ color: "var(--muted)" }}>No custom items yet.</td>
                                 </tr>
                             ) : (
-                                items.map((it) => {
+                                customItems.map((it) => {
                                     const isEditing = editingId === it.id;
-                                    
+
                                     if (isEditing) {
                                         return (
                                             <tr key={it.id} style={{ backgroundColor: "rgba(242,193,78,0.1)" }}>
@@ -289,19 +275,11 @@ export default function MenuItems() {
                                                     />
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                                        <button
-                                                            className="av-btn-primary"
-                                                            onClick={onSaveEdit}
-                                                            disabled={saving}
-                                                        >
+                                                    <div style={{ display: "flex", gap: 8 }}>
+                                                        <button className="av-btn-primary" onClick={onSaveEdit} disabled={saving}>
                                                             {saving ? "Saving..." : "Save"}
                                                         </button>
-                                                        <button
-                                                            className="av-btn"
-                                                            onClick={() => setEditingId(null)}
-                                                            disabled={saving}
-                                                        >
+                                                        <button className="av-btn" onClick={() => setEditingId(null)} disabled={saving}>
                                                             Cancel
                                                         </button>
                                                     </div>
@@ -309,11 +287,13 @@ export default function MenuItems() {
                                             </tr>
                                         );
                                     }
-                                    
+
                                     return (
                                         <tr key={it.id}>
                                             <td>
-                                                <div style={{ fontWeight: 800 }}>{it.name}</div>
+                                                <div style={{ fontWeight: 800 }}>
+                                                    {it.name || <span style={{ color: "var(--muted)", fontStyle: "italic" }}>(no name)</span>}
+                                                </div>
                                             </td>
                                             <td>{it.category}</td>
                                             <td>{money(it.price)}</td>
@@ -322,23 +302,15 @@ export default function MenuItems() {
                                                     type="checkbox"
                                                     checked={it.isAvailable}
                                                     onChange={() => onToggleActive(it)}
-                                                    disabled={saving}
                                                     style={{ cursor: "pointer" }}
                                                 />
                                             </td>
                                             <td>
-                                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                                    <button
-                                                        className="av-btn av-btn-edit"
-                                                        onClick={() => setEditingId(it.id)}
-                                                    >
+                                                <div style={{ display: "flex", gap: 8 }}>
+                                                    <button className="av-btn av-btn-edit" onClick={() => setEditingId(it.id)}>
                                                         Edit
                                                     </button>
-
-                                                    <button
-                                                        className="av-btn av-btn-danger"
-                                                        onClick={() => onDelete(it)}
-                                                    >
+                                                    <button className="av-btn av-btn-danger" onClick={() => onDelete(it)} disabled={saving}>
                                                         Delete
                                                     </button>
                                                 </div>

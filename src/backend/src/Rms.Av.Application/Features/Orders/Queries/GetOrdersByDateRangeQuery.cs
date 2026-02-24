@@ -78,6 +78,10 @@ public class GetOrdersByDateRangeQueryHandler : IRequestHandler<GetOrdersByDateR
                         hasNonVeg = true;
                     }
                 }
+                else
+                {
+                    item.MenuItemName = "*Item Removed*";
+                }
             }
             
             // Set meal type

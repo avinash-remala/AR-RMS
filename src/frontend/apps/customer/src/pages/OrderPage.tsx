@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAvailableMenuItems, type MenuItem } from "../services/menuApi";
 import { getActivePricing, type PricingItem } from "../services/pricingApi";
-import { placeOrder, getLastCustomerOrder, type PastOrder, type PastOrderItem } from "../services/ordersApi";
+import { placeOrder, getLastCustomerOrder, getCustomerMealPass, type PastOrder, type PastOrderItem, type MealPassInfo } from "../services/ordersApi";
 
 type RiceChoice = "Pulav Rice" | "White Rice";
 
@@ -39,6 +39,8 @@ export default function OrderPage() {
     const [addressOption, setAddressOption] = useState("");
     const [customAddress, setCustomAddress] = useState("");
     const [comments, setComments] = useState("");
+    const [mealPass, setMealPass] = useState<MealPassInfo | null>(null);
+    const [useMealPass, setUseMealPass] = useState(false);
 
     useEffect(() => {
         if (!customerId) { navigate("/"); return; }
@@ -56,14 +58,16 @@ export default function OrderPage() {
         setLoading(true);
         setError(null);
         try {
-            const [items, prices, last] = await Promise.all([
+            const [items, prices, last, pass] = await Promise.all([
                 getAvailableMenuItems(),
                 getActivePricing(),
                 getLastCustomerOrder(customerId!),
+                getCustomerMealPass(customerId!),
             ]);
             setMenuItems(items);
             setPricing(prices);
             setPastOrder(last);
+            setMealPass(pass);
             if (last) setShowPastOrderModal(true);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Failed to load menu.");
@@ -85,16 +89,16 @@ export default function OrderPage() {
 
     // Two cards for display
     const baseComfortBoxes: BoxOption[] = pricing
-        .filter(p => p.boxType.includes("comfort"))
+        .filter(p => p.boxType.includes("comfort") && p.isActive)
         .map(buildBaseOption);
 
     // Expanded variants (one per rice type) used for summary + submission lookup
     const comfortVariants: BoxOption[] = pricing
-        .filter(p => p.boxType.includes("comfort"))
+        .filter(p => p.boxType.includes("comfort") && p.isActive)
         .flatMap(p => RICE_OPTIONS.map(rt => ({ ...buildBaseOption(p), riceType: rt, key: `${p.boxType}:${rt}` })));
 
     const specialBoxes: BoxOption[] = isFriday
-        ? pricing.filter(p => p.boxType.includes("special")).map(buildBaseOption)
+        ? pricing.filter(p => p.boxType.includes("special") && p.isActive).map(buildBaseOption)
         : [];
 
     const allBoxOptions = [...comfortVariants, ...specialBoxes];
@@ -117,6 +121,22 @@ export default function OrderPage() {
     const boxTotal = selectedBoxEntries.reduce((sum, o) => sum + o.pricingItem.price * (selectedBoxQtys.get(o.key) ?? 0), 0);
     const extraTotal = selectedExtras.reduce((sum, e) => sum + e.price * (extraQuantities.get(e.id) ?? 0), 0);
     const totalAmount = boxTotal + extraTotal;
+
+    // Meal pass
+    const comfortBoxCount = comfortVariants
+        .filter(o => selectedBoxQtys.has(o.key))
+        .reduce((sum, o) => sum + (selectedBoxQtys.get(o.key) ?? 0), 0);
+    const comfortBoxTotal = comfortVariants
+        .filter(o => selectedBoxQtys.has(o.key))
+        .reduce((sum, o) => sum + o.pricingItem.price * (selectedBoxQtys.get(o.key) ?? 0), 0);
+    const canUseMealPass = mealPass !== null && comfortBoxCount > 0 && mealPass.mealsRemaining >= comfortBoxCount;
+    const discount = useMealPass && canUseMealPass ? comfortBoxTotal : 0;
+    const finalTotal = Math.max(0, totalAmount - discount);
+
+    // Auto-deselect meal pass if comfort boxes are removed
+    useEffect(() => {
+        if (comfortBoxCount === 0) setUseMealPass(false);
+    }, [comfortBoxCount]);
 
     function updateKey(key: string, delta: number) {
         setSelectedBoxQtys(prev => {
@@ -257,6 +277,7 @@ export default function OrderPage() {
                 customerId: customerId!,
                 buildingNumber: finalAddress,
                 comments: finalComments,
+                mealPassId: useMealPass && mealPass ? mealPass.id : undefined,
                 items: Array.from(itemMap.entries()).map(([menuItemId, quantity]) => ({ menuItemId, quantity })),
                 extras: [],
             });
@@ -487,9 +508,32 @@ export default function OrderPage() {
                                     </div>
                                 );
                             })}
+                            {canUseMealPass && (
+                                <div className="cp-meal-pass-row">
+                                    <label className="cp-meal-pass-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={useMealPass}
+                                            onChange={e => setUseMealPass(e.target.checked)}
+                                        />
+                                        <span>🎫 Apply Meal Pass</span>
+                                        <span className="cp-muted" style={{ fontSize: "0.8rem" }}>
+                                            {mealPass!.mealsRemaining} meals remaining · {comfortBoxCount} will be used
+                                        </span>
+                                    </label>
+                                    {useMealPass && (
+                                        <span className="cp-discount">−{money(discount)}</span>
+                                    )}
+                                </div>
+                            )}
+                            {mealPass && comfortBoxCount > 0 && !canUseMealPass && (
+                                <div className="cp-meal-pass-warning">
+                                    ⚠ Not enough meals on pass ({mealPass.mealsRemaining} remaining, {comfortBoxCount} needed)
+                                </div>
+                            )}
                             <div className="cp-summary-total">
                                 <span>Total</span>
-                                <span>{money(totalAmount)}</span>
+                                <span>{money(finalTotal)}</span>
                             </div>
                         </section>
                     )}

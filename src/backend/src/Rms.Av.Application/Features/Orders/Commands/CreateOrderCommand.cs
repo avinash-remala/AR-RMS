@@ -70,6 +70,41 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         order.TotalAmount = order.Items.Sum(i => i.Price * i.Quantity) +
                             order.Extras.Sum(e => e.Price * e.Quantity);
 
+        // Apply meal pass if provided
+        if (request.OrderDto.MealPassId.HasValue)
+        {
+            var pass = await _unitOfWork.MealPasses.GetByIdAsync(request.OrderDto.MealPassId.Value, cancellationToken);
+            if (pass == null)
+                throw new KeyNotFoundException("Meal pass not found");
+            if (!pass.IsActive)
+                throw new InvalidOperationException("Meal pass is not active");
+            if (pass.CustomerId != order.CustomerId)
+                throw new InvalidOperationException("Meal pass does not belong to this customer");
+
+            // Identify comfort box items (Category == "" and name contains "Comfort")
+            var comfortItems = order.Items
+                .Where(oi => items.Any(m => m.Id == oi.MenuItemId
+                    && m.Category == ""
+                    && m.Name.Contains("Comfort", StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            var mealsToUse = comfortItems.Sum(oi => oi.Quantity);
+            if (mealsToUse == 0)
+                throw new InvalidOperationException("Meal pass can only be used when ordering comfort boxes");
+            if (pass.MealsRemaining < mealsToUse)
+                throw new InvalidOperationException($"Not enough meals remaining. Available: {pass.MealsRemaining}, Required: {mealsToUse}");
+
+            var discount = comfortItems.Sum(oi => oi.Price * oi.Quantity);
+            order.DiscountAmount = discount;
+            order.TotalAmount = Math.Max(0, order.TotalAmount - discount);
+            order.MealPassId = pass.Id;
+
+            pass.MealsUsed += mealsToUse;
+            pass.LastUsedAt = DateTime.UtcNow;
+            pass.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.MealPasses.Update(pass);
+        }
+
         await _unitOfWork.Orders.AddAsync(order, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -447,6 +447,48 @@ body {
     margin-top: 0.25rem;
 }
 
+.cp-meal-pass-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+    margin: 0.5rem 0;
+}
+.cp-meal-pass-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    flex-wrap: wrap;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.cp-meal-pass-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: rgb(22, 163, 74);
+}
+.cp-discount {
+    font-weight: 700;
+    color: rgb(22, 163, 74);
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+.cp-meal-pass-warning {
+    font-size: 0.82rem;
+    color: rgb(180, 83, 9);
+    background: rgba(249, 115, 22, 0.08);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    margin: 0.25rem 0;
+}
+
 /* Section header with link */
 .cp-section-header {
     display: flex;

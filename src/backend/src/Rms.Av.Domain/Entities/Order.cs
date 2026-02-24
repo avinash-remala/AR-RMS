@@ -12,6 +12,8 @@ public class Order : AuditableEntity
     public string? Comments { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public Guid? MealPassId { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public List<OrderItem> Items { get; set; } = new();
     public List<OrderExtra> Extras { get; set; } = new();

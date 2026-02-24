@@ -33,10 +33,18 @@ export type Customer = {
     isActive: boolean;
 };
 
+export type MealPassInfo = {
+    id: string;
+    mealsRemaining: number;
+    totalMeals: number;
+    mealsUsed: number;
+};
+
 export type CreateOrderRequest = {
     customerId: string;
     buildingNumber: string;
     comments?: string;
+    mealPassId?: string;
     items: { menuItemId: string; quantity: number }[];
     extras: { extraItemId: string; quantity: number }[];
 };
@@ -80,6 +88,15 @@ export async function createCustomer(firstName: string, lastName: string, phone:
 export async function getLastCustomerOrder(customerId: string): Promise<PastOrder | null> {
     try {
         return await http<PastOrder>(`/v1/orders/customer/${encodeURIComponent(customerId)}/last`);
+    } catch {
+        return null;
+    }
+}
+
+export async function getCustomerMealPass(customerId: string): Promise<MealPassInfo | null> {
+    try {
+        const result = await http<MealPassInfo | null>(`/v1/customers/${encodeURIComponent(customerId)}/meal-pass`);
+        return result ?? null;
     } catch {
         return null;
     }

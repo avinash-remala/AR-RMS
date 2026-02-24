@@ -63,6 +63,10 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
                     hasNonVeg = true;
                 }
             }
+            else
+            {
+                item.MenuItemName = "*Item Removed*";
+            }
         }
 
         // Set meal type

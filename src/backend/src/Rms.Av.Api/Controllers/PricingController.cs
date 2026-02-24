@@ -1,10 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rms.Av.Api.Authorization;
 using Rms.Av.Application.DTOs;
 using Rms.Av.Application.Features.Pricing.Commands;
 using Rms.Av.Application.Features.Pricing.Queries;
 using Rms.Av.Domain.Entities;
+using Rms.Av.Infrastructure.Persistence;
 
 namespace Rms.Av.Api.Controllers;
 
@@ -15,11 +17,13 @@ public class PricingController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<PricingController> _logger;
+    private readonly RmsAvDbContext _context;
 
-    public PricingController(IMediator mediator, ILogger<PricingController> logger)
+    public PricingController(IMediator mediator, ILogger<PricingController> logger, RmsAvDbContext context)
     {
         _mediator = mediator;
         _logger = logger;
+        _context = context;
     }
 
     /// <summary>
@@ -56,6 +60,39 @@ public class PricingController : ControllerBase
             _logger.LogError(ex, "Error retrieving active pricing");
             return StatusCode(500, new { message = "An error occurred while retrieving active pricing" });
         }
+    }
+
+    /// <summary>
+    /// Toggle active status for a box type. Also syncs the linked MenuItem.IsAvailable.
+    /// </summary>
+    [HttpPatch("{boxType}/active")]
+    public async Task<IActionResult> ToggleActive(string boxType, [FromBody] bool isActive)
+    {
+        var pricing = await _context.Pricings.FirstOrDefaultAsync(p => p.BoxType == boxType);
+        if (pricing == null)
+            return NotFound(new { message = $"Pricing not found for box type '{boxType}'" });
+
+        pricing.IsActive = isActive;
+        pricing.UpdatedAt = DateTime.UtcNow;
+
+        // Sync the matching MenuItem.IsAvailable (matched by normalized display name)
+        var normalizedDisplay = pricing.DisplayName.Replace("-", " ").Trim().ToLower();
+        var menuItems = await _context.MenuItems
+            .Where(m => m.Category == "")
+            .ToListAsync();
+
+        foreach (var item in menuItems)
+        {
+            var normalizedItem = item.Name.Replace("-", " ").Trim().ToLower();
+            if (normalizedItem == normalizedDisplay)
+            {
+                item.IsAvailable = isActive;
+                item.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { boxType, isActive });
     }
 
     /// <summary>

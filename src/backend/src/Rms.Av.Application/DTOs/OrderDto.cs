@@ -14,6 +14,8 @@ public class OrderDto
     public string? RiceType { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public Guid? MealPassId { get; set; }
     public DateTime OrderDate { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();
     public List<OrderExtraDto> Extras { get; set; } = new();
@@ -41,6 +43,7 @@ public class CreateOrderDto
     public Guid CustomerId { get; set; }
     public string BuildingNumber { get; set; } = string.Empty;
     public string? Comments { get; set; }
+    public Guid? MealPassId { get; set; }
     public List<CreateOrderItemDto> Items { get; set; } = new();
     public List<CreateOrderExtraDto> Extras { get; set; } = new();
 }
