@@ -60,6 +60,7 @@ export type PastOrder = {
     id: string;
     orderNumber: string;
     orderDate: string;
+    comments?: string;
     items: PastOrderItem[];
 };
 

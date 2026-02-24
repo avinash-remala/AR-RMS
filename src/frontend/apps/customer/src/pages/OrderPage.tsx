@@ -156,6 +156,33 @@ export default function OrderPage() {
         });
     }
 
+    // Parse rice breakdown from order comments, e.g.:
+    // "Rice - Veg Comfort Box (Pulav Rice): x2, Non-Veg Comfort Box (White Rice): x3."
+    function parseRiceBreakdown(comments?: string): { name: string; rice: string; qty: number }[] {
+        if (!comments) return [];
+        const match = comments.match(/Rice - ([^.]+)\./);
+        if (!match) return [];
+        return match[1].split(", ").flatMap(part => {
+            const m = part.match(/^(.+?) \((.+?)\): x(\d+)$/);
+            if (!m) return [];
+            return [{ name: m[1].trim(), rice: m[2].trim(), qty: parseInt(m[3]) }];
+        });
+    }
+
+    function addPastRiceItem(item: PastOrderItem, rice: string, qty: number) {
+        const normalized = normalizeName(item.menuItemName);
+        const boxOpt = allBoxOptions.find(o =>
+            normalizeName(o.pricingItem.displayName) === normalized && o.riceType === rice
+        );
+        if (boxOpt) {
+            setSelectedBoxQtys(prev => {
+                const next = new Map(prev);
+                next.set(boxOpt.key, (next.get(boxOpt.key) ?? 0) + qty);
+                return next;
+            });
+        }
+    }
+
     function addPastItem(item: PastOrderItem) {
         const boxOpt = allBoxOptions.find(o => o.menuItem?.id === item.menuItemId);
         if (boxOpt) {
@@ -175,7 +202,18 @@ export default function OrderPage() {
 
     function addAllPastItems() {
         if (!pastOrder) return;
-        pastOrder.items.forEach(addPastItem);
+        const riceBreakdown = parseRiceBreakdown(pastOrder.comments);
+        pastOrder.items.forEach(item => {
+            if (item.menuItemName?.toLowerCase().includes("comfort box") && riceBreakdown.length > 0) {
+                const normalized = normalizeName(item.menuItemName);
+                const riceForItem = riceBreakdown.filter(r => normalizeName(r.name) === normalized);
+                if (riceForItem.length > 0) {
+                    riceForItem.forEach(r => addPastRiceItem(item, r.rice, r.qty));
+                    return;
+                }
+            }
+            addPastItem(item);
+        });
         setShowPastOrderModal(false);
     }
 
@@ -515,15 +553,38 @@ export default function OrderPage() {
                             Would you like to repeat items from your last order?
                         </p>
                         <div className="cp-past-order-items">
-                            {pastOrder.items.map(item => (
-                                <div key={item.menuItemId} className="cp-past-order-row">
-                                    <span className="cp-past-order-name">{item.menuItemName}</span>
-                                    <span className="cp-past-order-qty">×{item.quantity}</span>
-                                    <button type="button" className="cp-past-order-add" onClick={() => { addPastItem(item); setShowPastOrderModal(false); }}>
-                                        + Add
-                                    </button>
-                                </div>
-                            ))}
+                            {(() => {
+                                const riceBreakdown = parseRiceBreakdown(pastOrder.comments);
+                                return pastOrder.items.flatMap(item => {
+                                    if (item.menuItemName?.toLowerCase().includes("comfort box") && riceBreakdown.length > 0) {
+                                        const normalized = normalizeName(item.menuItemName);
+                                        const riceForItem = riceBreakdown.filter(r => normalizeName(r.name) === normalized);
+                                        if (riceForItem.length > 0) {
+                                            return riceForItem.map(r => (
+                                                <div key={`${item.menuItemId}-${r.rice}`} className="cp-past-order-row">
+                                                    <span className="cp-past-order-name">
+                                                        {item.menuItemName}
+                                                        <span className="cp-rice-tag" style={{ marginLeft: "0.4rem" }}>{r.rice}</span>
+                                                    </span>
+                                                    <span className="cp-past-order-qty">×{r.qty}</span>
+                                                    <button type="button" className="cp-past-order-add" onClick={() => { addPastRiceItem(item, r.rice, r.qty); setShowPastOrderModal(false); }}>
+                                                        + Add
+                                                    </button>
+                                                </div>
+                                            ));
+                                        }
+                                    }
+                                    return [(
+                                        <div key={item.menuItemId} className="cp-past-order-row">
+                                            <span className="cp-past-order-name">{item.menuItemName}</span>
+                                            <span className="cp-past-order-qty">×{item.quantity}</span>
+                                            <button type="button" className="cp-past-order-add" onClick={() => { addPastItem(item); setShowPastOrderModal(false); }}>
+                                                + Add
+                                            </button>
+                                        </div>
+                                    )];
+                                });
+                            })()}
                         </div>
                         <button type="button" className="cp-btn-primary" onClick={addAllPastItems}>
                             Add All to Order
