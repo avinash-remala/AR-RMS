@@ -15,8 +15,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Directory for SQLite volume mount
+# Seed database from committed file
 RUN mkdir -p /data
+COPY --from=build /src/src/Rms.Av.Api/rmsav.db /data/rmsav.db
 
 ENV PORT=8080
 CMD sh -c "ASPNETCORE_URLS=http://0.0.0.0:${PORT} dotnet Rms.Av.Api.dll"
