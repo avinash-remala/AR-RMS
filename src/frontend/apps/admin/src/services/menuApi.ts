@@ -83,7 +83,7 @@ export async function toggleAvailability(id: string, isAvailable: boolean): Prom
 }
 
 export async function deleteMenuItem(id: string): Promise<void> {
-    await http<void>(`/v1/menu-items/${id}/hard`, {
+    await http<void>(`/v1/menu-items/${id}`, {
         method: "DELETE",
     });
 }

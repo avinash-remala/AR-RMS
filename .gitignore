@@ -52,14 +52,21 @@ dist/
 dist-ssr/
 *.local
 
-# Database (commented out - keeping db files in git)
-# *.sqlite
-# *.sqlite3
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
 # Environment
 .env
 .env.local
 .env.*.local
+
+# Local secrets (use environment variables instead)
+appsettings.Development.json
+appsettings.Local.json
 
 # Logs
 logs/
