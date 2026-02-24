@@ -188,6 +188,14 @@ export default function OrderPage() {
         if (!finalAddress) { setError("Please select or enter your delivery address."); return; }
         if (addressOption === "Other" && !customAddress.trim()) { setError("Please enter your delivery address."); return; }
 
+        // Validate all selected box options have a matching menu item in the DB
+        const unmapped = selectedBoxEntries.filter(o => !o.menuItem);
+        if (unmapped.length > 0) {
+            const names = [...new Set(unmapped.map(o => o.pricingItem.displayName))].join(", ");
+            setError(`"${names}" is currently unavailable. Please ask admin to activate it in Menu Items.`);
+            return;
+        }
+
         setSubmitting(true);
         try {
             const riceNotes = comfortVariants
